@@ -24,7 +24,7 @@ vjs.plugin.merge = function(obj1, obj2) {
         }
     }
     return settings;
-};;(function() {
+};(function() {
     var defaults = {
         enabled : true,
         appId : 'your-chromecast-app-id',
@@ -55,7 +55,7 @@ vjs.plugin.merge = function(obj1, obj2) {
 
 
 })();
-;/**
+/**
  * Button pour envoyer le flux a ChromeCast
  *
  * @param {vjs.Player|Object} player

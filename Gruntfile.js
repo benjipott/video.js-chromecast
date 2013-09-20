@@ -17,7 +17,7 @@ module.exports = function (grunt) {
 
         concat: {
             options: {
-                separator: ';'
+                separator: ''
             },
             dist: {
                 src: ['src/videojs.pluginBase.js','src/videojs.chromeCast.js', 'src/component/**/*.js'],
