@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr" data-cast-api-enabled="true">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Chromecast receiver player</title>
+    <style type="text/css" media="screen">
+
+        body {
+            margin: 0;
+        }
+
+        .messages {
+            position: relative;
+            left: 0;
+            top: 0;
+            padding: 25px;
+            margin: 0;
+            width: 100%;
+            color: #FFF;
+            z-index: 3500;
+            background-color: #333;
+            font-size: 30px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="messages">
+    Chargement en cours...
+</div>
+<video id="vid" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%" autoplay="true" preload="auto"/>
+</body>
+
+<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="https://www.gstatic.com/cast/js/receiver/1.0/cast_receiver.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        var APP_ID = 'your-app-id',
+                NAMESPACE = cast.receiver.RemoteMedia.NAMESPACE,
+                receiver = new cast.receiver.Receiver(APP_ID, [ NAMESPACE ], "", 5),
+                remoteMedia = new cast.receiver.RemoteMedia();
+        remoteMedia.addChannelFactory(receiver.createChannelFactory(NAMESPACE)),
+                $messages = $('.messages'),
+                $body = $('body');
+        receiver.start();
+
+        window.addEventListener('load', function () {
+            var elem = document.getElementById('vid');
+            remoteMedia.setMediaElement(elem);
+
+            elem.addEventListener("loadedmetadata", function () {
+                        console.log(remoteMedia.getTitle());
+                        $messages.html(remoteMedia.getTitle()).delay(3000).fadeOut('slow');
+                    }
+            );
+        });
+
+    });
+</script>
+</html>
