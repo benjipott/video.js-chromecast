@@ -1,8 +1,8 @@
 (function() {
     var defaults = {
         enabled : true,
-        appId : 'your-chromecast-app-id',
-        namespace : 'your-namesapace',
+        appId : 'your_app_id',
+        namespace : '',
         title:'',
         description:''
     };
@@ -13,6 +13,8 @@
         if (!settings.enabled) {
             return false;
         }
+
+        this.player = this;
 
         /*
          * 
@@ -25,6 +27,7 @@
          * event.data && event.data.source == "CastApi" && event.data.event == "Hello") initializeApi(); })); };
          */
         this.chromeCastComponent = new vjs.ChromeCastComponent(this, settings);
+        this.player.controlBar.addChild(this.chromeCastComponent);
     });
 
 
