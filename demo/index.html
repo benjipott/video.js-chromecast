@@ -5,8 +5,8 @@
     <link rel="stylesheet" href="../dist/videojs.chromeCast.css" type="text/css"/>
     <link href="../libs/video-js-4.2.1/video-js.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
-    <!--<script src="../libs/video-js-4.2.1/combined.video.js"></script>-->
-    <script src="../../video.js/dist/video-js/video.dev.js"></script>
+    <script src="../libs/video-js-4.2.1/combined.video.js"></script>
+    <!--<script src="../../video.js/dist/video-js/video.dev.js"></script>-->
     <script src="../dist/videojs.chromeCast.js"></script>
 </head>
 
@@ -17,7 +17,8 @@
 </video>
 
 <script>
-    videojs('video', {'plugins': {'chromecast': {appId: 'your_app_id'}}});
+    /*videojs('video', {'plugins': {'chromecast': {appId: 'E6F31CBB'}}, 'techOrder' : ['Html5', 'ChromecastTech']});*/
+    videojs('video', {'plugins': {'chromecast': {appId: 'E6F31CBB'}}, 'techOrder' : ['Html5', 'ChromecastTech']});
 </script>
 
 </body>

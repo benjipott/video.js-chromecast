@@ -11,10 +11,10 @@ vjs.Player.prototype.chromeCastComponent = {};
 
 vjs.ChromeCastComponent = vjs.Button.extend({
     /** @constructor */
-    init: function (player, options) {
+    init: function(player, options) {
+        this.settings = options;
         vjs.Button.call(this, player, options);
 
-        vjs.log(this.player_);
         if (!player.controls()) {
             this.disable();
         }
@@ -23,7 +23,7 @@ vjs.ChromeCastComponent = vjs.Button.extend({
         this.el_.setAttribute('role', 'button');
 
         this.initializeApi();
-        
+
     }
 
 });
@@ -41,9 +41,14 @@ vjs.ChromeCastComponent.prototype.apiInitialized = false;
 vjs.ChromeCastComponent.prototype.progressFlag = 1;
 vjs.ChromeCastComponent.prototype.timer = null;
 vjs.ChromeCastComponent.prototype.timerStep = 1000;
-vjs.ChromeCastComponent.prototype.currentMediaTime = 0;
 
-vjs.ChromeCastComponent.prototype.playing = false;
+vjs.ChromeCastComponent.prototype.currentMediaTime = 0;
+vjs.ChromeCastComponent.prototype.paused = true;
+vjs.ChromeCastComponent.prototype.seeking = false;
+vjs.ChromeCastComponent.prototype.currentVolume = 1;
+vjs.ChromeCastComponent.prototype.muted = false;
+
+vjs.ChromeCastComponent.boundEvents = {};
 
 
 vjs.ChromeCastComponent.prototype.onInitSuccess = function() {
@@ -64,15 +69,15 @@ vjs.ChromeCastComponent.prototype.sessionUpdateListener = function(session) {};
 
 vjs.ChromeCastComponent.prototype.receiverListener = function(availability) {
     vjs.log("receivers available: " + (('available' === availability) ? "Yes" : "No"));
-    if ('available' === availability){
+    if ('available' === availability) {
         this.show();
     }
 };
 
-vjs.ChromeCastComponent.prototype.initializeApi = function () {
+vjs.ChromeCastComponent.prototype.initializeApi = function() {
     vjs.log('ChromeCastComponent initializeApi');
 
-    if (!vjs.IS_CHROME){
+    if (!vjs.IS_CHROME) {
         return;
     }
 
@@ -82,40 +87,40 @@ vjs.ChromeCastComponent.prototype.initializeApi = function () {
         return;
     }
 
-    var sessionRequest = new chrome.cast.SessionRequest(this.options_.appId);
+    var sessionRequest = new chrome.cast.SessionRequest("E6F31CBB");
     var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
-                    this.sessionJoinedListener.bind(this),
-                    this.receiverListener.bind(this));
+        this.sessionJoinedListener.bind(this),
+        this.receiverListener.bind(this));
     chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.onInitError.bind(this));
 };
 
-vjs.ChromeCastComponent.prototype.doLaunch = function () {
+vjs.ChromeCastComponent.prototype.doLaunch = function() {
     vjs.log("Cast video : " + this.player_.currentSrc());
 
-    if(this.apiInitialized) {
+    if (this.apiInitialized) {
         chrome.cast.requestSession(
-                // Success
-                this.onSessionSuccess.bind(this),
-                // Error
-                function(castError){
-                    vjs.log("session_established ERROR: " + JSON.stringify(castError));
-                });
+            // Success
+            this.onSessionSuccess.bind(this),
+            // Error
+            function(castError) {
+                vjs.log("session_established ERROR: " + JSON.stringify(castError));
+            });
     } else {
         vjs.log("session_established NOT INITIALIZED");
     }
 };
 
-vjs.ChromeCastComponent.prototype.onSessionSuccess = function(session){
+vjs.ChromeCastComponent.prototype.onSessionSuccess = function(session) {
     this.apiSession = session;
     vjs.log("session_established YES - " + session.sessionId);
 
     this.addClass("connected");
 
-    this.player_.pause();
-    this.player_.chromeCastComponent.disableNativeControls();
+    /*this.player_.pause();
+    this.player_.chromeCastComponent.disableNativeControls();*/
 
     var mediaInfo = new chrome.cast.media.MediaInfo(this.player_.currentSrc(), "video/mp4");
-    //vjs.log("## MediaInfo('"+url+"', '"+mime+"')");
+    //vjs.log("## MediaInfo('" + url + "', '" + mime + "')");
     var loadRequest = new chrome.cast.media.LoadRequest(mediaInfo);
     loadRequest.autoplay = true;
 
@@ -125,29 +130,30 @@ vjs.ChromeCastComponent.prototype.onSessionSuccess = function(session){
     this.apiSession.loadMedia(loadRequest, this.onMediaDiscovered.bind(this), this.onMediaError.bind(this));
 }
 
-vjs.ChromeCastComponent.prototype.onMediaDiscovered = function(media){
+vjs.ChromeCastComponent.prototype.onMediaDiscovered = function(media) {
     // chrome.cast.media.Media object
     this.apiMedia = media;
     this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
 
     vjs.log("Got media object");
     this.startProgressTimer(this.incrementMediaTime.bind(this));
-    
+
     vjs.log("play!!!!");
-    this.playing = true;
-    this.player_.controlBar.playToggle.onPlay();
-    this.player_.onPlay();
-    
-    if(this.apiMedia.playerState === chrome.cast.media.PlayerState.PLAYING) {
-    } else {
-    }
+    this.paused = false;
+    this.player_.loadTech('ChromecastTech', {});
+    this.player_.userActive(true);
+
+    /*this.player_.controlBar.playToggle.onPlay();
+    this.player_.onPlay();*/
+
+    if (this.apiMedia.playerState === chrome.cast.media.PlayerState.PLAYING) {} else {}
 }
 
-vjs.ChromeCastComponent.prototype.onMediaError = function(castError){
+vjs.ChromeCastComponent.prototype.onMediaError = function(castError) {
     vjs.log('Media Error: ' + JSON.stringify(castError));
 }
 
-vjs.ChromeCastComponent.prototype.onMediaStatusUpdate = function(e){
+vjs.ChromeCastComponent.prototype.onMediaStatusUpdate = function(e) {
     if (this.progressFlag) {
         //vjs.log(parseInt(100 * this.apiMedia.currentTime / this.apiMedia.media.duration) + "%");
         vjs.log(this.apiMedia.currentTime + "/" + this.apiMedia.media.duration);
@@ -157,7 +163,7 @@ vjs.ChromeCastComponent.prototype.onMediaStatusUpdate = function(e){
 }
 
 vjs.ChromeCastComponent.prototype.startProgressTimer = function(callback) {
-    if(this.timer) {
+    if (this.timer) {
         clearInterval(this.timer);
         this.timer = null;
     }
@@ -166,128 +172,175 @@ vjs.ChromeCastComponent.prototype.startProgressTimer = function(callback) {
     this.timer = setInterval(callback.bind(this), this.timerStep);
 };
 
+vjs.ChromeCastComponent.prototype.duration = function() {
+    if (!this.apiMedia) {
+        return 0;
+    }
+
+    return this.apiMedia.media.duration;
+};
+
 /**
  * play media
  */
-vjs.ChromeCastComponent.prototype.playMedia = function() {
-  if(!this.apiMedia) 
-    return;
 
-  if(!this.playing) {
-    this.apiMedia.play(null,
-      this.mediaCommandSuccessCallback.bind(this,"playing started for " + this.apiMedia.sessionId),
-      this.onError.bind(this));
-      this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-      this.player_.controlBar.playToggle.onPlay();
-      this.player_.onPlay();
-      this.playing = true;
-  }
-  else {
-      this.apiMedia.pause(null,
-        this.mediaCommandSuccessCallback.bind(this,"paused " + this.apiMedia.sessionId),
-        this.onError.bind(this));
 
-      this.player_.controlBar.playToggle.onPause();
-      this.player_.onPause();
-      this.playing = false;
-  }
+vjs.ChromeCastComponent.prototype.play = function() {
+    if (!this.apiMedia) {
+        return;
+    }
+
+    if (this.paused) {
+        this.apiMedia.play(null,
+            this.mediaCommandSuccessCallback.bind(this, "playing started for " + this.apiMedia.sessionId),
+            this.onError.bind(this));
+        this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
+        //this.player_.controlBar.playToggle.onPlay();
+        //this.player_.onPlay();
+        this.paused = false;
+    }
+};
+
+vjs.ChromeCastComponent.prototype.pause = function() {
+    if (!this.apiMedia) {
+        return;
+    }
+
+    if (!this.paused) {
+        this.apiMedia.pause(null,
+            this.mediaCommandSuccessCallback.bind(this, "paused " + this.apiMedia.sessionId),
+            this.onError.bind(this));
+
+        /*this.player_.controlBar.playToggle.onPause();
+        this.player_.onPause();*/
+        this.paused = true;
+    }
+};
+
+/**
+ * seek media position
+ * @param {Number} pos A number to indicate percent
+ */
+vjs.ChromeCastComponent.prototype.seekMedia = function(pos) {
+    /*console.log('Seeking ' + currentMediaSession.sessionId + ':' +
+        currentMediaSession.mediaSessionId + ' to ' + pos + "%");*/
+    //progressFlag = 0;
+    var request = new chrome.cast.media.SeekRequest();
+    request.currentTime = pos;
+    this.apiMedia.seek(request,
+        this.onSeekSuccess.bind(this, pos),
+        this.onError);
+};
+
+/**
+ * callback on success for media commands
+ * @param {string} info A message string
+ * @param {Object} e A non-null media object
+ */
+vjs.ChromeCastComponent.prototype.onSeekSuccess = function(pos) {
+    this.currentMediaTime = pos;
+    //appendMessage(info);
+    /*setTimeout(function() {
+        progressFlag = 1
+    }, 1500);*/
+}
+
+vjs.ChromeCastComponent.prototype.setMediaVolume = function(level, mute) {
+    if (!this.apiMedia)
+        return;
+
+    var volume = new chrome.cast.Volume();
+    volume.level = level;
+    this.currentVolume = volume.level;
+    volume.muted = mute;
+    this.muted = mute;
+    var request = new chrome.cast.media.VolumeRequest();
+    request.volume = volume;
+    this.apiMedia.setVolume(request,
+        this.mediaCommandSuccessCallback.bind(this, 'media set-volume done'),
+        this.onError);
+    this.player_.trigger('volumechange');
+}
+
+
+vjs.Player.prototype.onTimeUpdate = function() {
+    console.log("test");
+    //console.log(this.chromeCastComponent.currentMediaTime);
+    this.trigger("timeupdate");
 }
 
 vjs.ChromeCastComponent.prototype.incrementMediaTime = function() {
-  if (this.apiMedia.playerState === chrome.cast.media.PlayerState.PLAYING) {
-    if (this.currentMediaTime < this.apiMedia.media.duration) {
-      this.currentMediaTime += 1;
-      this.updateProgressBarByTimer();
+    if (this.apiMedia.playerState === chrome.cast.media.PlayerState.PLAYING) {
+        if (this.currentMediaTime < this.apiMedia.media.duration) {
+            this.currentMediaTime += 1;
+            this.player_.onTimeUpdate();
+            //this.updateProgressBarByTimer();
+        } else {
+            this.currentMediaTime = 0;
+            clearInterval(this.timer);
+        }
     }
-    else {
-      this.currentMediaTime = 0;
-      clearInterval(this.timer);
-    }
-  }
 };
 
-vjs.ChromeCastComponent.prototype.updateProgressBarByTimer = function(){
+vjs.ChromeCastComponent.prototype.updateProgressBarByTimer = function() {
     //vjs.log(this.currentMediaTime);
     var bufferedPercent = parseInt(100 * this.currentMediaTime / this.apiMedia.media.duration);
     //vjs.log(bufferedPercent + "%");
-    if (this.player_.controlBar.progressControl.seekBar.bar.el_.style) { this.player_.controlBar.progressControl.seekBar.bar.el_.style.width = vjs.round(bufferedPercent, 2) + '%'; }
-    if (this.player_.controlBar.progressControl.seekBar.seekHandle.el_.style) { this.player_.controlBar.progressControl.seekBar.seekHandle.el_.style.left = vjs.round(bufferedPercent, 2) + '%'; }
+    if (this.player_.controlBar.progressControl.seekBar.bar.el_.style) {
+        this.player_.controlBar.progressControl.seekBar.bar.el_.style.width = vjs.round(bufferedPercent, 2) + '%';
+    }
+    if (this.player_.controlBar.progressControl.seekBar.seekHandle.el_.style) {
+        this.player_.controlBar.progressControl.seekBar.seekHandle.el_.style.left = vjs.round(bufferedPercent, 2) + '%';
+    }
     this.player_.controlBar.currentTimeDisplay.content.innerHTML = '<span class="vjs-control-text">Current Time </span>' + vjs.formatTime(this.currentMediaTime);
 }
 
 /**
- * Callback function for media command success 
+ * Callback function for media command success
  */
 vjs.ChromeCastComponent.prototype.mediaCommandSuccessCallback = function(info, e) {
-  vjs.log(info);
+    vjs.log(info);
 };
 
 vjs.ChromeCastComponent.prototype.onError = function() {
-  vjs.log("error");
+    vjs.log("error");
 };
 
-
-vjs.ChromeCastComponent.prototype.disableNativeControls = function(){
-
-    this.player_.pause();
-
-    this.player_.posterImage.off("click");
-    this.player_.posterImage.show();
-
-    this.player_.controlBar.progressControl.seekBar.off('mousedown');
-    this.player_.controlBar.progressControl.seekBar.off('touchstart');
-    this.player_.controlBar.progressControl.seekBar.off('click');
-    this.player_.controlBar.playToggle.off('click');
-    this.player_.controlBar.playToggle.off('focus');
-    this.player_.controlBar.playToggle.off('blur');
-
-    this.player_.controlBar.playToggle.on('click', this.playMedia.bind(this));
-    /*this.player_.controlBar.progressControl.seekBar.on('mousedown');
-    this.player_.controlBar.progressControl.seekBar.on('touchstart');
-    this.player_.controlBar.progressControl.seekBar.on('click');*/   
+vjs.ChromeCastComponent.prototype.buildCSSClass = function() {
+    return this.className + vjs.Button.prototype.buildCSSClass.call(this);
 };
 
-vjs.ChromeCastComponent.prototype.enableNativeControls = function(){
-    this.player_.controlBar.progressControl.seekBar.on('mousedown',  player.controlBar.progressControl.seekBar.onMouseDown);
-    this.player_.controlBar.progressControl.seekBar.on('touchstart', player.controlBar.progressControl.seekBar.onMouseDown);
-    this.player_.controlBar.progressControl.seekBar.on('click', player.controlBar.progressControl.seekBar.onClick);
-};
-
-vjs.ChromeCastComponent.prototype.buildCSSClass = function(){
-  return this.className + vjs.Button.prototype.buildCSSClass.call(this);
-};
-
-vjs.ChromeCastComponent.prototype.createEl = function (type, props) {
+vjs.ChromeCastComponent.prototype.createEl = function(type, props) {
     var el = vjs.Button.prototype.createEl.call(this, 'div');
     return el;
 };
 
-vjs.ChromeCastComponent.prototype.onClick = function (){
+vjs.ChromeCastComponent.prototype.onClick = function() {
     vjs.Button.prototype.onClick.call(this);
-    
+
     this.doLaunch();
 };
 
 vjs.ChromeCastBanner = vjs.Component.extend({
     /** @constructor */
-    init: function (player, options) {
+    init: function(player, options) {
         vjs.Component.call(this, player, options);
     }
 
 });
 
-vjs.ChromeCastBanner.prototype.createEl = function(type, props){
-  props = vjs.obj.merge({
-    className: this.buildCSSClass(),
-    innerHTML: '',
-    tabIndex: 0
-  }, props);
+vjs.ChromeCastBanner.prototype.createEl = function(type, props) {
+    props = vjs.obj.merge({
+        className: this.buildCSSClass(),
+        innerHTML: '',
+        tabIndex: 0
+    }, props);
 
-  return vjs.Component.prototype.createEl.call(this, type, props);
+    return vjs.Component.prototype.createEl.call(this, type, props);
 
 };
 
-vjs.ChromeCastBanner.prototype.buildCSSClass = function(){
-  // TODO: Change vjs-control to vjs-button?
-  return 'vjs-currentlyCasting';
+vjs.ChromeCastBanner.prototype.buildCSSClass = function() {
+    // TODO: Change vjs-control to vjs-button?
+    return 'vjs-currentlyCasting';
 };

@@ -20,7 +20,7 @@ module.exports = function (grunt) {
                 separator: ''
             },
             dist: {
-                src: ['src/videojs.pluginBase.js','src/videojs.chromeCast.js', 'src/component/**/*.js'],
+                src: ['src/videojs.pluginBase.js','src/videojs.chromeCast.js', 'src/component/**/*.js', 'src/media/**/*.js'],
                 dest: 'dist/videojs.chromeCast.js'
             }
         },
