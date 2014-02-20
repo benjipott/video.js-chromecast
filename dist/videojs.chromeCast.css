@@ -1,4 +1,4 @@
-/*! videojs-chromeCast - v0.1.0 - 2014-02-18
+/*! videojs-chromeCast - v0.1.0 - 2014-02-20
 * https://github.com/benjipott/videojs-chromeCast
 * Copyright (c) 2014 Pott Benjamin; Licensed MIT */
 
@@ -45,6 +45,23 @@
     -webkit-box-shadow: 0 0 1em rgba(255, 255, 255, 1);
     -moz-box-shadow: 0 0 1em rgba(255, 255, 255, 1);
     box-shadow: 0 0 1em rgba(255, 255, 255, 1);
+}
+
+.backgroundImage{
+    display: block;
+    width:100%;
+    height: 100%;
+    position: absolute;
+    background-color: #000;
+    top: 0;
+    text-align: center;
+}
+
+.castingLabel{
+    color: #FFF;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100px;
 }
 
 .currentlyCasting{

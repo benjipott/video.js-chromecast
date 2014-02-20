@@ -18,7 +18,7 @@ vjs.ChromecastTech = vjs.MediaTechController.extend({
         this.el_ = videojs.Component.prototype.createEl('div', {
             id: 'myId',
             className: 'vjs-tech',
-            innerHTML: '<span>ChromeCastTech element</span>'
+            innerHTML: '<img src="' + this.player_.options_.poster + '" class="backgroundImage"/><div class="currentlyCasting"><h2 class="castingLabel">Casting to device</h2></div>'
         });
         vjs.insertFirst(this.el_, this.player_.el());
         this.triggerReady();
@@ -78,7 +78,7 @@ vjs.ChromecastTech.prototype.paused = function() {
 };
 
 vjs.ChromecastTech.prototype.currentTime = function() {
-    vjs.log("currentTime?");
+    //vjs.log("currentTime?");
     return this.player_.chromeCastComponent.currentMediaTime;
 };
 

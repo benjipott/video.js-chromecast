@@ -38,6 +38,7 @@ vjs.ChromeCastComponent.prototype.apiMedia = null;
 vjs.ChromeCastComponent.prototype.apiSession = null;
 vjs.ChromeCastComponent.prototype.apiInitialized = false;
 
+vjs.ChromeCastComponent.prototype.casting = false;
 vjs.ChromeCastComponent.prototype.progressFlag = 1;
 vjs.ChromeCastComponent.prototype.timer = null;
 vjs.ChromeCastComponent.prototype.timerStep = 1000;
@@ -87,7 +88,14 @@ vjs.ChromeCastComponent.prototype.initializeApi = function() {
         return;
     }
 
-    var sessionRequest = new chrome.cast.SessionRequest("E6F31CBB");
+    console.log(this.settings.appId);
+    var sessionRequest;
+    if (this.settings.appId) {
+        var sessionRequest = new chrome.cast.SessionRequest(this.settings.appId);
+    } else {
+        var sessionRequest = new chrome.cast.SessionRequest(chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID);
+    }
+
     var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
         this.sessionJoinedListener.bind(this),
         this.receiverListener.bind(this));
@@ -127,6 +135,8 @@ vjs.ChromeCastComponent.prototype.onSessionSuccess = function(session) {
     vjs.log('Sending Load Request: ');
     vjs.log(loadRequest);
 
+    loadRequest.currentTime = this.player_.currentTime();
+
     this.apiSession.loadMedia(loadRequest, this.onMediaDiscovered.bind(this), this.onMediaError.bind(this));
 }
 
@@ -142,6 +152,7 @@ vjs.ChromeCastComponent.prototype.onMediaDiscovered = function(media) {
     this.paused = false;
     this.player_.loadTech('ChromecastTech', {});
     this.player_.userActive(true);
+    this.casting = true;
 
     /*this.player_.controlBar.playToggle.onPlay();
     this.player_.onPlay();*/
@@ -154,12 +165,24 @@ vjs.ChromeCastComponent.prototype.onMediaError = function(castError) {
 }
 
 vjs.ChromeCastComponent.prototype.onMediaStatusUpdate = function(e) {
+
+    if (!this.apiMedia) {
+        return;
+    }
+
     if (this.progressFlag) {
         //vjs.log(parseInt(100 * this.apiMedia.currentTime / this.apiMedia.media.duration) + "%");
         vjs.log(this.apiMedia.currentTime + "/" + this.apiMedia.media.duration);
     }
-    vjs.log(this.apiMedia.playerState);
+
     vjs.ChromeCastComponent.prototype.currentMediaTime = this.apiMedia.currentTime;
+
+    vjs.log(this.apiMedia.playerState);
+    if (this.apiMedia.playerState == "IDLE") {
+        this.currentMediaTime = 0;
+        this.trigger("timeupdate");
+        this.onStopAppSuccess();
+    }
 }
 
 vjs.ChromeCastComponent.prototype.startProgressTimer = function(callback) {
@@ -232,11 +255,7 @@ vjs.ChromeCastComponent.prototype.seekMedia = function(pos) {
         this.onError);
 };
 
-/**
- * callback on success for media commands
- * @param {string} info A message string
- * @param {Object} e A non-null media object
- */
+
 vjs.ChromeCastComponent.prototype.onSeekSuccess = function(pos) {
     this.currentMediaTime = pos;
     //appendMessage(info);
@@ -262,18 +281,11 @@ vjs.ChromeCastComponent.prototype.setMediaVolume = function(level, mute) {
     this.player_.trigger('volumechange');
 }
 
-
-vjs.Player.prototype.onTimeUpdate = function() {
-    console.log("test");
-    //console.log(this.chromeCastComponent.currentMediaTime);
-    this.trigger("timeupdate");
-}
-
 vjs.ChromeCastComponent.prototype.incrementMediaTime = function() {
     if (this.apiMedia.playerState === chrome.cast.media.PlayerState.PLAYING) {
         if (this.currentMediaTime < this.apiMedia.media.duration) {
             this.currentMediaTime += 1;
-            this.player_.onTimeUpdate();
+            this.trigger("timeupdate");
             //this.updateProgressBarByTimer();
         } else {
             this.currentMediaTime = 0;
@@ -306,6 +318,35 @@ vjs.ChromeCastComponent.prototype.onError = function() {
     vjs.log("error");
 };
 
+/**
+ * Stops the running receiver application associated with the session.
+ */
+vjs.ChromeCastComponent.prototype.stopCasting = function() {
+    this.apiSession.stop(this.onStopAppSuccess.bind(this),
+        this.onError.bind(this));
+};
+
+/**
+ * Callback function for stop app success
+ */
+vjs.ChromeCastComponent.prototype.onStopAppSuccess = function() {
+    clearInterval(this.timer);
+    this.casting = false;
+    this.removeClass("connected");
+    this.player_.src(this.player_.options_['sources']);
+    vjs.insertFirst(this.player_.tech.el_, this.player_.el());
+    if (this.apiMedia.playerState == "IDLE") {
+        this.player_.currentTime(0);
+        this.player_.onPause();
+    } else {
+        this.player_.currentTime(this.currentMediaTime);
+        if (!this.paused) {
+            this.player_.play();
+        }
+    }
+    this.apiMedia = null;
+};
+
 vjs.ChromeCastComponent.prototype.buildCSSClass = function() {
     return this.className + vjs.Button.prototype.buildCSSClass.call(this);
 };
@@ -318,7 +359,11 @@ vjs.ChromeCastComponent.prototype.createEl = function(type, props) {
 vjs.ChromeCastComponent.prototype.onClick = function() {
     vjs.Button.prototype.onClick.call(this);
 
-    this.doLaunch();
+    if (this.casting) {
+        this.stopCasting();
+    } else {
+        this.doLaunch();
+    }
 };
 
 vjs.ChromeCastBanner = vjs.Component.extend({

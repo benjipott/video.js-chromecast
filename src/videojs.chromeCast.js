@@ -1,7 +1,6 @@
 (function() {
     var defaults = {
         enabled: true,
-        appId: 'your_app_id',
         namespace: '',
         title: '',
         description: ''

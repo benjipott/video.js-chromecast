@@ -43,6 +43,23 @@
     box-shadow: 0 0 1em rgba(255, 255, 255, 1);
 }
 
+.backgroundImage{
+    display: block;
+    width:100%;
+    height: 100%;
+    position: absolute;
+    background-color: #000;
+    top: 0;
+    text-align: center;
+}
+
+.castingLabel{
+    color: #FFF;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100px;
+}
+
 .currentlyCasting{
     opacity: .6;
     display: block;

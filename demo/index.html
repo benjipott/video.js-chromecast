@@ -12,13 +12,13 @@
 
 <body>
 <video id="video" controls preload="none" class="video-js vjs-default-skin" width="640" height="360" poster="http://peach.blender.org/wp-content/uploads/bbb-splash.png">
-    <source src="https://archive.org/download/BigBuckBunny_328/BigBuckBunny_512kb.mp4" type="video/mp4">
+    <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4" type="video/mp4">
     <source src="http://vjs.zencdn.net/v/oceans.webm" type="video/webm">
 </video>
 
 <script>
-    /*videojs('video', {'plugins': {'chromecast': {appId: 'E6F31CBB'}}, 'techOrder' : ['Html5', 'ChromecastTech']});*/
-    videojs('video', {'plugins': {'chromecast': {appId: 'E6F31CBB'}}, 'techOrder' : ['Html5', 'ChromecastTech']});
+    videojs('video', {'plugins': {'chromecast': {}}, 'techOrder' : ['Html5', 'ChromecastTech']});
+    //videojs('video', {'plugins': {'chromecast': {appId: 'your_app_id'}}, 'techOrder' : ['Html5', 'ChromecastTech']});
 </script>
 
 </body>
