@@ -1,12 +1,13 @@
 {
-  "name": "videojs-metrics",
+  "name": "videojs-chromecast",
   "version": "1.2.0",
-  "author": "Afrostream, Inc. @benjipott",
+  "author": "benjipott",
   "license": "Apache-2.0",
   "main": [
-    "dist/videojs-metrics.min.js"
+    "dist/videojs-chromecast.min.js"
   ],
   "keywords": [
+    "chromecast",
     "videojs",
     "videojs-plugin"
   ]
