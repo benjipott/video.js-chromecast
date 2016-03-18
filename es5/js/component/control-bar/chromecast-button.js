@@ -129,40 +129,43 @@ var ChromeCastButton = (function (_Button) {
       var type = this.player_.currentType();
 
       mediaInfo = new chrome.cast.media.MediaInfo(source, type);
-
+      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
       if (this.options_.metadata) {
-        mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
         ref = this.options_.metadata;
         for (key in ref) {
           value = ref[key];
           mediaInfo.metadata[key] = value;
         }
-
-        //Add poster image on player
-        var poster = this.player().poster();
-        if (poster) {
-          image = new chrome.cast.Image(poster);
-          mediaInfo.metadata.images = [image];
-        }
+      }
+      //Add poster image on player
+      var poster = this.player().poster();
+      if (poster) {
+        image = new chrome.cast.Image(poster);
+        mediaInfo.metadata.images = [image];
       }
 
       // Load/Add caption tracks
       var plTracks = this.player().textTracks();
-
+      var remotePlTracks = this.player().remoteTextTrackEls();
       if (plTracks) {
         var tracks = [];
         for (var i = 0; i < plTracks.length; i++) {
-          var pTrack = plTracks[i];
-          var track = new chrome.cast.media.Track(nbTrack + 1, chrome.cast.media.TrackType.TEXT);
-          track.trackContentId = pTrack.src;
-          track.trackContentType = pTrack.type;
+          var plTrack = plTracks.tracks_[i];
+          var remotePlTrack = remotePlTracks.trackElements_[i];
+          var track = new chrome.cast.media.Track(i + 1, chrome.cast.media.TrackType.TEXT);
+          track.trackContentId = plTrack.id || remotePlTrack.src;
+          track.trackContentType = plTrack.type;
           track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
-          track.name = pTrack.label;
-          track.language = pTrack.language;
+          track.name = plTrack.label;
+          track.language = plTrack.language;
           track.customData = null;
+          tracks.push(track);
         }
-
         mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
+        mediaInfo.textTrackStyle.backgroundColor = '#00000060';
+        mediaInfo.textTrackStyle.edgeType = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
+        mediaInfo.textTrackStyle.windowType = chrome.cast.media.TextTrackWindowType.ROUNDED_CORNERS;
         mediaInfo.tracks = tracks;
       }
 
@@ -173,54 +176,18 @@ var ChromeCastButton = (function (_Button) {
       loadRequest.currentTime = this.player_.currentTime();
 
       this.apiSession.loadMedia(loadRequest, this.onMediaDiscovered.bind(this), this.castError.bind(this));
-      return this.apiSession.addUpdateListener(this.onSessionUpdate.bind(this));
-    }
-  }, {
-    key: 'onTrackChangeHandler',
-    value: function onTrackChangeHandler() {
-      var i = undefined;
-      var len = undefined;
-      var ref = undefined;
-      var track = undefined;
-
-      this.activeTrackIds = [];
-
-      ref = this.player_.textTracks();
-      for (i = 0, len = ref.length; i < len; i++) {
-        track = ref[i];
-        if (track['mode'] === 'showing') {
-          this.activeTrackIds.push(track.id);
-        }
-      }
-      this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this.activeTrackIds);
-
-      if (this.player_.apiMedia) {
-        return this.player_.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
-      }
-    }
-  }, {
-    key: 'onTrackSuccess',
-    value: function onTrackSuccess() {
-      return _videoJs2['default'].log('track added');
-    }
-  }, {
-    key: 'onTrackError',
-    value: function onTrackError() {
-      return _videoJs2['default'].log('track error');
+      this.apiSession.addUpdateListener(this.onSessionUpdate.bind(this));
     }
   }, {
     key: 'onMediaDiscovered',
     value: function onMediaDiscovered(media) {
       this.player_.loadTech_('Chromecast', {
         apiMedia: media,
-        receiver: this.apiSession.receiver.friendlyName
+        apiSession: this.apiSession
       });
 
       this.casting = true;
-      this.paused = this.player_.paused();
-      this.inactivityTimeout = this.player_.options_.inactivityTimeout;
-      this.player_.options_.inactivityTimeout = 0;
-      return this.player_.userActive(true);
+      this.player_.userActive(true);
     }
   }, {
     key: 'onSessionUpdate',
@@ -235,29 +202,26 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'onError',
     value: function onError() {
-      return _videoJs2['default'].log('error');
+      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
     }
   }, {
     key: 'stopCasting',
     value: function stopCasting() {
-      return this.apiSession.stop(this.onStopAppSuccess.bind(this), this.onError);
+      return this.apiSession.stop(this.onStopAppSuccess.bind(this), this.onError.bind(this));
     }
   }, {
     key: 'onStopAppSuccess',
     value: function onStopAppSuccess() {
-      this.clearInterval(this.timer);
       this.casting = false;
+      var time = this.player_.currentTime();
       this.removeClass('connected');
       this.player_.src(this.player_.options_['sources']);
-      if (!this.paused) {
+      if (!this.player_.paused()) {
         this.player_.one('seeked', function () {
           return this.player_.play();
         });
       }
-      this.player_.currentTime(this.currentMediaTime);
-      this.player_.controls(false);
-      this.player_.options_.inactivityTimeout = this.inactivityTimeout;
-      this.player_.apiMedia = null;
+      this.player_.currentTime(time);
       return this.apiSession = null;
     }
 

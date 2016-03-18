@@ -1,17 +1,10 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (global){
-if (typeof window !== "undefined") {
-    module.exports = window;
-} else if (typeof global !== "undefined") {
-    module.exports = global;
-} else if (typeof self !== "undefined"){
-    module.exports = self;
-} else {
-    module.exports = {};
-}
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
+/**
+ * videojs-chromecast
+ * @version 1.0.0
+ * @copyright 2016 Benjipott, Inc.
+ * @license Apache-2.0
+ */
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.videojsChromecast = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 /**
  * @file chromecast-button.js
@@ -281,43 +274,8 @@ ControlBar.prototype.options_.children.splice(12, 0, 'chromeCastButton');
 Component.registerComponent('ChromeCastButton', ChromeCastButton);
 exports['default'] = ChromeCastButton;
 module.exports = exports['default'];
-
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
-(function (global){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-
-var _videoJs2 = _interopRequireDefault(_videoJs);
-
-var _videojsChromecast = require('./videojs-chromecast');
-
-var _videojsChromecast2 = _interopRequireDefault(_videojsChromecast);
-
-/**
- * The video.js playlist plugin. Invokes the playlist-maker to create a
- * playlist function on the specific player.
- *
- * @param {Array} list
- */
-var plugin = function plugin(options) {
-  (0, _videojsChromecast2['default'])(this, options);
-};
-
-_videoJs2['default'].plugin('chromecast', plugin);
-
-exports['default'] = plugin;
-module.exports = exports['default'];
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./videojs-chromecast":5}],4:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 (function (global){
 /**
  * @file chromecast.js
@@ -821,9 +779,8 @@ Component.registerComponent('Chromecast', Chromecast);
 Tech.registerTech('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];
-
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../../../node_modules/global/window":1}],5:[function(require,module,exports){
+},{"../../../node_modules/global/window":4}],3:[function(require,module,exports){
 (function (global){
 /**
  * ! videojs-chromecast - v1.0.0 - 2016-02-15
@@ -900,6 +857,52 @@ _videoJs2['default'].addLanguage('fr', {
 Component.registerComponent('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./component/control-bar/chromecast-button":1,"./tech/chromecast":2}],4:[function(require,module,exports){
+(function (global){
+if (typeof window !== "undefined") {
+    module.exports = window;
+} else if (typeof global !== "undefined") {
+    module.exports = global;
+} else if (typeof self !== "undefined"){
+    module.exports = self;
+} else {
+    module.exports = {};
+}
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./component/control-bar/chromecast-button":2,"./tech/chromecast":4}]},{},[3]);
+},{}],5:[function(require,module,exports){
+(function (global){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+
+var _videoJs2 = _interopRequireDefault(_videoJs);
+
+var _videojsChromecast = require('./videojs-chromecast');
+
+var _videojsChromecast2 = _interopRequireDefault(_videojsChromecast);
+
+/**
+ * The video.js playlist plugin. Invokes the playlist-maker to create a
+ * playlist function on the specific player.
+ *
+ * @param {Array} list
+ */
+var plugin = function plugin(options) {
+  (0, _videojsChromecast2['default'])(this, options);
+};
+
+_videoJs2['default'].plugin('chromecast', plugin);
+
+exports['default'] = plugin;
+module.exports = exports['default'];
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./videojs-chromecast":3}]},{},[5])(5)
+});
