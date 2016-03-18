@@ -170,7 +170,7 @@ class ChromeCastButton extends Button {
   }
 
   onError() {
-    return videojs.log('error');
+    return videojs.log('error' + e.code + ' ' + e.description);
   }
 
   stopCasting() {

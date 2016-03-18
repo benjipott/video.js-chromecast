@@ -162,8 +162,8 @@ class Chromecast extends Tech {
     return videojs.log('track error' + e.code + ' ' + e.description);
   }
 
-  onError() {
-    return videojs.log('error');
+  onError(e) {
+    return videojs.log('error' + e.code + ' ' + e.description);
   }
 
   play() {
@@ -409,7 +409,7 @@ Chromecast.prototype['featuresFullscreenResize'] = false;
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
-Chromecast.prototype['featuresProgressEvents'] = true;
+Chromecast.prototype['featuresProgressEvents'] = false;
 
 /*
  * Sets the tech's status on native text track support
@@ -433,7 +433,7 @@ Chromecast.prototype['featuresNativeAudioTracks'] = true;
 Chromecast.prototype['featuresNativeVideoTracks'] = false;
 
 
-Chromecast.prototype['featuresTimeupdateEvents'] = false;
+Chromecast.prototype['featuresTimeupdateEvents'] = true;
 
 
 videojs.options.chromecast = {};

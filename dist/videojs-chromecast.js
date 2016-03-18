@@ -217,7 +217,7 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'onError',
     value: function onError() {
-      return _videoJs2['default'].log('error');
+      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
     }
   }, {
     key: 'stopCasting',
@@ -525,8 +525,8 @@ var Chromecast = (function (_Tech) {
     }
   }, {
     key: 'onError',
-    value: function onError() {
-      return _videoJs2['default'].log('error');
+    value: function onError(e) {
+      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
     }
   }, {
     key: 'play',
@@ -786,7 +786,7 @@ Chromecast.prototype['featuresFullscreenResize'] = false;
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
-Chromecast.prototype['featuresProgressEvents'] = true;
+Chromecast.prototype['featuresProgressEvents'] = false;
 
 /*
  * Sets the tech's status on native text track support
@@ -809,7 +809,7 @@ Chromecast.prototype['featuresNativeAudioTracks'] = true;
  */
 Chromecast.prototype['featuresNativeVideoTracks'] = false;
 
-Chromecast.prototype['featuresTimeupdateEvents'] = false;
+Chromecast.prototype['featuresTimeupdateEvents'] = true;
 
 _videoJs2['default'].options.chromecast = {};
 
