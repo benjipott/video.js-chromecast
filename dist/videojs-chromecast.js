@@ -786,7 +786,7 @@ Chromecast.prototype['featuresFullscreenResize'] = false;
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
-Chromecast.prototype['featuresProgressEvents'] = false;
+Chromecast.prototype['featuresProgressEvents'] = true;
 
 /*
  * Sets the tech's status on native text track support
@@ -809,6 +809,10 @@ Chromecast.prototype['featuresNativeAudioTracks'] = true;
  */
 Chromecast.prototype['featuresNativeVideoTracks'] = false;
 
+/*
+ * Set the tech's timeupdate event support status
+ * (this disables the manual timeupdate events of the Tech)
+ */
 Chromecast.prototype['featuresTimeupdateEvents'] = true;
 
 _videoJs2['default'].options.chromecast = {};
