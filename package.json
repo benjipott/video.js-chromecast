@@ -1,22 +1,128 @@
 {
   "name": "videojs-chromeCast",
-  "version": "0.1.0",
-  "homepage": "https://github.com/benjipott/videojs-chromeCast",
-  "author": {
-    "name": "Pott Benjamin",
-    "email": "pott.benjamin@gmail.com"
+  "version": "1.0.0",
+  "description": "Chromecast plugin for videojs",
+  "main": "es5/js/plugin.js",
+  "scripts": {
+    "prebuild": "npm run clean",
+    "build": "npm-run-all -p build:*",
+    "build:js": "npm-run-all mkdirs build:js:babel build:js:browserify build:js:bannerize build:js:uglify",
+    "build:js:babel": "babel src -d es5",
+    "build:js:bannerize": "bannerize dist/videojs-chromecast.js --banner=scripts/banner.ejs",
+    "build:js:browserify": "browserify . -s videojs-chromecast -o dist/videojs-chromecast.js",
+    "build:js:uglify": "uglifyjs dist/videojs-chromecast.js --comments --mangle --compress -o dist/videojs-chromecast.min.js",
+    "build:css": "node-sass --include-path src --output-style compressed src/css/videojs-chromecast.scss -o dist",
+    "build:test": "npm-run-all mkdirs build:test:browserify",
+    "build:test:browserify": "browserify `find test -name '*.test.js'` -t babelify -o dist-test/videojs-chromecast.js",
+    "clean": "rm -rf dist dist-test es5",
+    "docs": "doctoc README.md docs/api.md",
+    "lint": "vjsstandard",
+    "mkdirs": "mkdir -p dist dist-test es5",
+    "prepublish": "npm run build",
+    "prestart": "npm-run-all -p docs build",
+    "dev": "npm-run-all -p start watch",
+    "start": "npm-run-all -p start:serve",
+    "start:serve": "babel-node --optional es7.functionBind,es7.classProperties,es7.decorators  scripts/server.js",
+    "pretest": "npm-run-all build:test",
+    "test": "karma start test/karma/detected.js",
+    "test:chrome": "npm run pretest && karma start test/karma/chrome.js",
+    "test:firefox": "npm run pretest && karma start test/karma/firefox.js",
+    "test:ie": "npm run pretest && karma start test/karma/ie.js",
+    "test:safari": "npm run pretest && karma start test/karma/safari.js",
+    "preversion": "./scripts/npm-preversion-for-bower.sh",
+    "version": "./scripts/npm-version-for-bower.sh",
+    "postversion": "./scripts/npm-postversion-for-bower.sh",
+    "watch": "npm run mkdirs && npm-run-all -p watch:*",
+    "watch:js": "watchify src/js/plugin.js -t babelify -v -o dist/videojs-chromecast.js",
+    "watch:css": "nodemon -e scss -x \"npm run build:css\"",
+    "watch:test": "watchify `find test -name '*.test.js'` -t babelify -o dist-test/videojs-chromecast.js"
   },
-  "license": "MIT",
-  "engines": {
-    "node": ">= 0.8.0"
+  "keywords": [
+    "chromecast",
+    "videojs",
+    "videojs-plugin"
+  ],
+  "author": "Benjipott, Inc.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benjipott/video.js-chromecast"
+  },
+  "files": [
+    "CONTRIBUTING.md",
+    "bower.json",
+    "dist-test/",
+    "dist/",
+    "docs/",
+    "es5/",
+    "index.html",
+    "scripts/",
+    "src/js/",
+    "test/"
+  ],
+  "babel": {
+    "optional": [
+      "es7.functionBind",
+      "es7.classProperties",
+      "es7.decorators"
+    ]
   },
   "devDependencies": {
-    "grunt-contrib-uglify": "~0.2.0",
-    "grunt-contrib-clean": "~0.4.0",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-cssmin": "~0.4.1",
-    "grunt-contrib-copy": "~0.4.0",
-    "grunt-banner": "",
-    "grunt": "~0.4.1"
+    "babel": "^5.8.0",
+    "babelify": "^6.0.0",
+    "bannerize": "^1.0.0",
+    "browserify": "^11.0.0",
+    "browserify-shim": "^3.0.0",
+    "connect": "^3.4.0",
+    "cowsay": "^1.1.0",
+    "doctoc": "^0.15.0",
+    "global": "^4.3.0",
+    "karma": "^0.13.0",
+    "karma-browserify": "^4.4.0",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-detect-browsers": "^2.0.0",
+    "karma-firefox-launcher": "^0.1.0",
+    "karma-ie-launcher": "^0.2.0",
+    "karma-qunit": "^0.1.0",
+    "karma-safari-launcher": "^0.1.0",
+    "lodash-compat": "^3.10.0",
+    "minimist": "^1.2.0",
+    "node-sass": "^3.4.2",
+    "node.extend": "^1.1.5",
+    "nodemon": "^1.9.1",
+    "npm-run-all": "~1.2.0",
+    "portscanner": "^1.0.0",
+    "qunitjs": "^1.0.0",
+    "serve-static": "^1.10.0",
+    "sinon": "1.14.1",
+    "uglify-js": "^2.5.0",
+    "videojs-standard": "^4.0.0",
+    "watchify": "^3.6.0",
+    "xhr": "^2.2.0"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": {
+    "qunit": "global:QUnit",
+    "sinon": "global:sinon",
+    "video.js": "global:videojs"
+  },
+  "vjsstandard": {
+    "ignore": [
+      "dist",
+      "dist-test",
+      "docs",
+      "es5",
+      "test/karma",
+      "scripts"
+    ]
+  },
+  "dependencies": {
+    "global": "^4.3.0",
+    "object.assign": "^4.0.3",
+    "video.js": "^5.0.0"
   }
 }

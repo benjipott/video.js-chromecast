@@ -1,49 +1,56 @@
-# videojs-chromeCast
+[![Build Status](https://api.travis-ci.org/Afrostream/videojs-metrics.svg?branch=master)](https://travis-ci.org/Afrostream/videojs-metrics)
 
-Display a chromecast Button on Control Bar video.js players.
+# Chromecast Plugin for video.js
 
-![videojs-chromeCast](http://benjipott.fr/images/video.js-chromecast.jpg)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## ChromeCast Api Reference
-https://developers.google.com/cast/ (doc)
-https://developers.google.com/cast/whitelisting (whitelisting)
 
-This plugin was tested on video.js 4.1.0 4.2.0 and 4.2.1.
+- [Installation](#installation)
+- [Inclusion](#inclusion)
+- [Basic Usage](#basic-usage)
+- [License](#license)
 
-## Getting Started
-Download [videojs](http://www.videojs.com/) and [videojs.ga](https://github.com/benjipott/videojs-chromeCast)
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-Allow your cast by clicking four times in the bottom left corner of the icon cast
-![videojs-chromeCast](http://benjipott.fr/images/video.js-chromecast-allow.jpg)
+## Installation
 
-In your web page:
-```html
-<html data-cast-api-enabled="true">
-<script src="video.js"></script>
-<script src="dist/videojs.chromeCast.min.js"></script>
-<link rel="stylesheet" href="dist/videojs.chromeCast.css" type="text/css" />
-<video id="video" src="movie.mp4" controls></video>
-<script>
+Install videojs-chromecast via npm (preferred):
 
-    videojs('video', {
-        'plugins': {
-               'chromecast': {
-                    enabled : true,
-                    appId : 'your-chromecast-app-id',
-                    namespace : 'your-chromecast-namespace',
-                    title : 'video title',
-                    description : 'video desc'
-                    }
-               }
-        }
-    );
-</script>
+```sh
+$ npm install videojs-chromecast
 ```
 
-## Options
+Or Bower:
 
-    enabled : true,
-    appId : 'your-chromecast-app-id',
-    namespace : 'your-namesapace',
-    title:'',
-    description:''
+```sh
+$ bower install videojs-chromecast
+```
+
+## Inclusion
+
+Include videojs-chromecast on your website using the tool(s) of your choice.
+
+The simplest method of inclusion is a `<script>` tag after the video.js `<script>` tag:
+
+```html
+<script src="path/to/video.js/dist/video.js"></script>
+<script src="path/to/videojs-chromecast/dist/videojs-chromecast.js"></script>
+```
+
+When installed via npm, videojs-chromecast supports Browserify-based workflows out of the box.
+
+## Basic Usage
+
+For full details on how to use the playlist plugin can be found in [the API documentation](docs/api.md).
+
+```js
+var player = videojs('video');
+
+player.chromecast();
+
+```
+
+## License
+
+Apache-2.0. Copyright (c) Benjipott, Inc.
