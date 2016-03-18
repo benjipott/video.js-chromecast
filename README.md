@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/Afrostream/videojs-metrics.svg?branch=master)](https://travis-ci.org/Afrostream/videojs-metrics)
+[![Build Status](https://travis-ci.org/benjipott/video.js-chromecast.svg?branch=master)](https://travis-ci.org/benjipott/video.js-chromecast)
 
 # Chromecast Plugin for video.js
 
