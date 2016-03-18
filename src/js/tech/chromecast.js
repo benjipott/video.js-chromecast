@@ -21,22 +21,24 @@ class Chromecast extends Tech {
   constructor(options, ready) {
     super(options, ready);
     this.apiMedia = this.options_.source.apiMedia;
-    this.receiver = this.options_.source.receiver;
+    this.apiSession = this.options_.source.apiSession;
+    this.receiver = this.apiSession.receiver.friendlyName
 
     this.apiMedia.addUpdateListener(::this.onMediaStatusUpdate);
+    this.apiSession.addUpdateListener(::this.onSessionUpdate);
     this.startProgressTimer();
-    //if (this.selectedTrack) {
-    //  this.activeTrackIds = [this.selectedTrack.trackId];
-    //  this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this.activeTrackIds);
-    //  media.editTracksInfo(this.tracksInfoRequest, ::this.onTrackSuccess, ::this.onTrackError);
-    //}
+    let tracks = this.textTracks();
+    if (tracks) {
+      let changeHandler = ::this.handleTracksChange;
 
-    let mediatracks = this.apiMedia.media.tracks;
-    let tracksList = this.textTracks();
-    for (let i = 0; i < mediatracks.length; i++) {
-      let track = mediatracks[i];
-      tracksList.addTrack_(track);
+      tracks.addEventListener('change', changeHandler);
+      this.on('dispose', function () {
+        tracks.removeEventListener('change', changeHandler);
+      });
+
+      this.handleTracksChange();
     }
+
     this.update();
     this.triggerReady();
   }
@@ -63,6 +65,31 @@ class Chromecast extends Tech {
     } else {
       this.clearInterval(this.timer);
     }
+  }
+
+  onSessionUpdate(isAlive) {
+    if (!this.apiMedia) {
+      return;
+    }
+    if (!isAlive) {
+      return this.onStopAppSuccess();
+    }
+  }
+
+  onStopAppSuccess() {
+    this.clearInterval(this.timer);
+    this.casting = false;
+    this.removeClass('connected');
+    this.player_.src(this.player_.options_['sources']);
+    if (!this.paused) {
+      this.player_.one('seeked', function () {
+        return this.player_.play();
+      });
+    }
+    this.player_.currentTime(this.currentMediaTime);
+    this.player_.controls(false);
+    this.player_.apiMedia = null;
+    return this.apiSession = null;
   }
 
   onMediaStatusUpdate() {
@@ -106,6 +133,34 @@ class Chromecast extends Tech {
     }
   }
 
+  handleTracksChange() {
+    let trackInfo = [];
+    let tracks = this.textTracks();
+
+    if (!tracks) {
+      return;
+    }
+
+    for (let i = 0; i < tracks.length; i++) {
+      let track = tracks[i];
+      if (track['mode'] === 'showing') {
+        trackInfo.push(i + 1);
+      }
+    }
+
+    if (this.apiMedia) {
+      this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
+      return this.apiMedia.editTracksInfo(this.tracksInfoRequest, ::this.onTrackSuccess, ::this.onTrackError);
+    }
+  }
+
+  onTrackSuccess(e) {
+    return videojs.log('track added');
+  }
+
+  onTrackError(e) {
+    return videojs.log('track error' + e.code + ' ' + e.description);
+  }
 
   onError() {
     return videojs.log('error');
@@ -126,7 +181,7 @@ class Chromecast extends Tech {
       return;
     }
     if (!this.paused_) {
-      this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), this.onError);
+      this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), ::this.onError);
       return this.paused_ = true;
     }
   }

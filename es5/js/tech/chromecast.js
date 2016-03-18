@@ -60,7 +60,8 @@ var Chromecast = (function (_Tech) {
     var tracksList = this.textTracks();
     for (var i = 0; i < mediatracks.length; i++) {
       var track = mediatracks[i];
-      tracksList.addTrack_(track);
+      var pT = tracksList.addTrack_(track);
+      debugger;
     }
     this.update();
     this.triggerReady();
