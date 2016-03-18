@@ -415,7 +415,7 @@ var Chromecast = (function (_Tech) {
         return;
       }
       if (this.apiMedia.currentTime) {
-        this.trigger({ type: 'timeupdate', target: this, manuallyTriggered: true });
+        this.trigger('timeupdate');
       } else {
         this.clearInterval(this.timer);
       }
