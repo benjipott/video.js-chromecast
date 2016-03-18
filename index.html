@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>videojs-chromecast Demo</title>
+    <link href="/node_modules/video.js/dist/video-js.css" rel="stylesheet">
+    <link href="/dist/videojs-chromecast.css" rel="stylesheet">
+</head>
+<body>
+<video class="video-js vjs-default-skin" controls width="640px" height="360px" crossorigin="anonymous"
+       poster="http://content.bitsontherun.com/thumbs/3XnJSIm4-480.jpg">
+    <!--<track kind="captions" src="//playertest.longtailvideo.com/captions/bunny-en.srt" srclang="en"-->
+    <!--label="English"/>-->
+    <!--<track kind="chapters" src="//playertest.longtailvideo.com/chapters/bunny-chapters.vtt">-->
+    <track kind="captions" src="./node_modules/video.js/dist/examples/shared/example-captions.vtt" srclang="fr"
+           label="Francais" default/>
+    <!-- Tracks need an ending tag thanks to IE9 -->
+    <track kind="captions" src="./node_modules/video.js/dist/examples//shared/example-captions.vtt" srclang="en"
+           label="English"/>
+    <source src="//content.bitsontherun.com/videos/bkaovAYt-52qL9xLP.mp4" type="video/mp4">
+    <source src="//content.bitsontherun.com/videos/bkaovAYt-27m5HpIu.webm" type="video/webm">
+</video>
+<ul>
+    <li><a href="/test/">Run unit tests in browser.</a></li>
+</ul>
+<script src="/node_modules/video.js/dist/video.js"></script>
+<script src="/dist/videojs-chromecast.js"></script>
+<!-- chromecast sdk -->
+<script src="http://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+<script>
+
+    var player = videojs(document.querySelector('video'), {
+        language: 'fr',
+        tracks: [
+            {
+                kind: 'captions',
+                src: './node_modules/video.js/dist/examples/shared/example-captions.vtt',
+                srclang: 'fr',
+                label: 'Francais'
+            }
+        ]
+    }).toJSON();
+
+</script>
+</body>
+</html>
