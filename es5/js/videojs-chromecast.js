@@ -54,12 +54,20 @@ Chromecast.prototype.options_ = {};
 // register the plugin
 _videoJs2['default'].options.children.chromecast = {};
 
-_videoJs2['default'].addLanguage("de", {
-  "CASTING TO": "WIEDERGABE AUF"
+_videoJs2['default'].addLanguage('en', {
+  'CASTING TO': 'WIEDERGABE AUF'
 });
 
-_videoJs2['default'].addLanguage("it", {
-  "CASTING TO": "PLAYBACK SU"
+_videoJs2['default'].addLanguage('de', {
+  'CASTING TO': 'WIEDERGABE AUF'
+});
+
+_videoJs2['default'].addLanguage('it', {
+  'CASTING TO': 'PLAYBACK SU'
+});
+
+_videoJs2['default'].addLanguage('fr', {
+  'CASTING TO': 'CAST EN COURS SUR'
 });
 
 Component.registerComponent('Chromecast', Chromecast);

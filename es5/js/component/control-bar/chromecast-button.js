@@ -43,6 +43,7 @@ var ChromeCastButton = (function (_Button) {
     _get(Object.getPrototypeOf(ChromeCastButton.prototype), 'constructor', this).call(this, player, options);
     this.hide();
     this.initializeApi();
+    player.chromecast = this;
   }
 
   /**
@@ -63,8 +64,8 @@ var ChromeCastButton = (function (_Button) {
       }
       if (!chrome.cast || !chrome.cast.isAvailable) {
         _videoJs2['default'].log('Cast APIs not available');
-        if (this.tryingReconnect < 3) {
-          this.setTimeout(this.initializeApi, 5000);
+        if (this.tryingReconnect < 10) {
+          this.setTimeout(this.initializeApi, 1000);
           ++this.tryingReconnect;
         }
         _videoJs2['default'].log('Cast APIs not available. Max reconnect attempt');
@@ -117,12 +118,10 @@ var ChromeCastButton = (function (_Button) {
       var loadRequest = undefined;
       var mediaInfo = undefined;
       var ref = undefined;
-      var ref1 = undefined;
       var value = undefined;
 
       _videoJs2['default'].log('Session initialized: ' + session.sessionId);
 
-      this.selectedTrack = null;
       this.apiSession = session;
       this.addClass('connected');
 
@@ -148,30 +147,23 @@ var ChromeCastButton = (function (_Button) {
       }
 
       // Load/Add caption tracks
-      this.plTracks = this.options_.tracks;
+      var plTracks = this.player().textTracks();
 
-      if (this.plTracks) {
-        this.nbTrack = 1;
-        this.tracks = [];
-        ref1 = this.plTracks;
-        for (key in ref1) {
-          value = ref1[key];
-          this.track = new chrome.cast.media.Track(this.nbTrack, chrome.cast.media.TrackType.TEXT);
-          this.track.trackContentId = value.src;
-          this.track.trackContentType = value.type;
-          this.track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
-          this.track.name = value.label;
-          this.track.language = value.language;
-          if (value.mode === 'showing') {
-            this.selectedTrack = this.track;
-          }
-          this.track.customData = null;
-          this.tracks.push(this.track);
-          ++this.nbTrack;
+      if (plTracks) {
+        var tracks = [];
+        for (var i = 0; i < plTracks.length; i++) {
+          var pTrack = plTracks[i];
+          var track = new chrome.cast.media.Track(nbTrack + 1, chrome.cast.media.TrackType.TEXT);
+          track.trackContentId = pTrack.src;
+          track.trackContentType = pTrack.type;
+          track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
+          track.name = pTrack.label;
+          track.language = pTrack.language;
+          track.customData = null;
         }
 
         mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
-        mediaInfo.tracks = this.tracks;
+        mediaInfo.tracks = tracks;
       }
 
       // Request load media source
@@ -202,8 +194,8 @@ var ChromeCastButton = (function (_Button) {
       }
       this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this.activeTrackIds);
 
-      if (this.apiMedia) {
-        return this.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
+      if (this.player_.apiMedia) {
+        return this.player_.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
       }
     }
   }, {
@@ -219,15 +211,8 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'onMediaDiscovered',
     value: function onMediaDiscovered(media) {
-      this.apiMedia = media;
-      this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-      if (this.selectedTrack) {
-        this.activeTrackIds = [this.selectedTrack.trackId];
-        this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(this.activeTrackIds);
-        this.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
-      }
-      this.startProgressTimer(this.incrementMediaTime.bind(this));
       this.player_.loadTech_('Chromecast', {
+        apiMedia: media,
         receiver: this.apiSession.receiver.friendlyName
       });
 
@@ -240,122 +225,12 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'onSessionUpdate',
     value: function onSessionUpdate(isAlive) {
-      if (!this.apiMedia) {
+      if (!this.player_.apiMedia) {
         return;
       }
       if (!isAlive) {
         return this.onStopAppSuccess();
       }
-    }
-  }, {
-    key: 'onMediaStatusUpdate',
-    value: function onMediaStatusUpdate(isAlive) {
-      if (!this.apiMedia) {
-        return;
-      }
-      this.currentMediaTime = this.apiMedia.currentTime;
-      switch (this.apiMedia.playerState) {
-        case chrome.cast.media.PlayerState.IDLE:
-          this.currentMediaTime = 0;
-          this.trigger('timeupdate');
-          return this.onStopAppSuccess();
-        case chrome.cast.media.PlayerState.PAUSED:
-          if (this.paused) {
-            return;
-          }
-          this.player_.pause();
-          return this.paused = true;
-        case chrome.cast.media.PlayerState.PLAYING:
-          if (!this.paused) {
-            return;
-          }
-          this.player_.play();
-          return this.paused = false;
-      }
-    }
-  }, {
-    key: 'startProgressTimer',
-    value: function startProgressTimer(callback) {
-      if (this.timer) {
-        this.clearInterval(this.timer);
-        this.timer = null;
-      }
-      return this.timer = this.setInterval(callback.bind(this), this.timerStep);
-    }
-  }, {
-    key: 'play',
-    value: function play() {
-      if (!this.apiMedia) {
-        return;
-      }
-      if (this.paused) {
-        this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), this.onError.bind(this));
-        return this.paused = false;
-      }
-    }
-  }, {
-    key: 'pause',
-    value: function pause() {
-      if (!this.apiMedia) {
-        return;
-      }
-      if (!this.paused) {
-        this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), this.onError);
-        return this.paused = true;
-      }
-    }
-  }, {
-    key: 'seekMedia',
-    value: function seekMedia(position) {
-      var request = undefined;
-      request = new chrome.cast.media.SeekRequest();
-      request.currentTime = position;
-      if (this.player_.controlBar.progressControl.seekBar.videoWasPlaying) {
-        request.resumeState = chrome.cast.media.ResumeState.PLAYBACK_START;
-      }
-      return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), this.onError.bind(this));
-    }
-  }, {
-    key: 'onSeekSuccess',
-    value: function onSeekSuccess(position) {
-      return this.currentMediaTime = position;
-    }
-  }, {
-    key: 'setMediaVolume',
-    value: function setMediaVolume(level, mute) {
-      var request = undefined;
-      var volume = undefined;
-      if (!this.apiMedia) {
-        return;
-      }
-      volume = new chrome.cast.Volume();
-      volume.level = level;
-      volume.muted = mute;
-      this.currentVolume = volume.level;
-      this.muted = mute;
-      request = new chrome.cast.media.VolumeRequest();
-      request.volume = volume;
-      this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), this.onError.bind(this));
-      return this.player_.trigger('volumechange');
-    }
-  }, {
-    key: 'incrementMediaTime',
-    value: function incrementMediaTime() {
-      if (this.apiMedia.playerState !== chrome.cast.media.PlayerState.PLAYING) {
-        return;
-      }
-      if (this.currentMediaTime < this.apiMedia.media.duration) {
-        this.currentMediaTime += 1;
-        return this.trigger('timeupdate');
-      } else {
-        this.currentMediaTime = 0;
-        return this.clearInterval(this.timer);
-      }
-    }
-  }, {
-    key: 'mediaCommandSuccessCallback',
-    value: function mediaCommandSuccessCallback(information, event) {
-      return _videoJs2['default'].log(information);
     }
   }, {
     key: 'onError',
@@ -382,7 +257,7 @@ var ChromeCastButton = (function (_Button) {
       this.player_.currentTime(this.currentMediaTime);
       this.player_.controls(false);
       this.player_.options_.inactivityTimeout = this.inactivityTimeout;
-      this.apiMedia = null;
+      this.player_.apiMedia = null;
       return this.apiSession = null;
     }
 
@@ -400,7 +275,6 @@ var ChromeCastButton = (function (_Button) {
 
     /**
      * Handle click on mute
-     *
      * @method handleClick
      */
   }, {
