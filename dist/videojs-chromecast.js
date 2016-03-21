@@ -1,10 +1,17 @@
-/**
- * videojs-chromecast
- * @version 1.0.0
- * @copyright 2016 Benjipott, Inc.
- * @license Apache-2.0
- */
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.videojsChromecast = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
+if (typeof window !== "undefined") {
+    module.exports = window;
+} else if (typeof global !== "undefined") {
+    module.exports = global;
+} else if (typeof self !== "undefined"){
+    module.exports = self;
+} else {
+    module.exports = {};
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],2:[function(require,module,exports){
 (function (global){
 /**
  * @file chromecast-button.js
@@ -89,6 +96,30 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'castError',
     value: function castError(_castError) {
+
+      var error = {
+        code: _castError.code,
+        message: _castError.description
+      };
+
+      switch (_castError.code) {
+        case chrome.cast.ErrorCode.API_NOT_INITIALIZED:
+        case chrome.cast.ErrorCode.EXTENSION_MISSING:
+        case chrome.cast.ErrorCode.EXTENSION_NOT_COMPATIBLE:
+        case chrome.cast.ErrorCode.INVALID_PARAMETER:
+        case chrome.cast.ErrorCode.LOAD_MEDIA_FAILED:
+        case chrome.cast.ErrorCode.RECEIVER_UNAVAILABLE:
+        case chrome.cast.ErrorCode.SESSION_ERROR:
+        case chrome.cast.ErrorCode.CHANNEL_ERROR:
+        case chrome.cast.ErrorCode.TIMEOUT:
+          this.addClass('error');
+          break;
+        case chrome.cast.ErrorCode.CANCEL:
+          break;
+        default:
+          this.player_.error(error);
+          break;
+      }
       return _videoJs2['default'].log('Cast Error: ' + JSON.stringify(_castError));
     }
   }, {
@@ -99,6 +130,10 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'sessionJoinedListener',
     value: function sessionJoinedListener(session) {
+      if (session.media.length) {
+        this.apiSession = session;
+        this.onMediaDiscovered(session.media[0]);
+      }
       return console.log('Session joined');
     }
   }, {
@@ -131,8 +166,6 @@ var ChromeCastButton = (function (_Button) {
       _videoJs2['default'].log('Session initialized: ' + session.sessionId);
 
       this.apiSession = session;
-      this.addClass('connected');
-
       var source = this.player_.currentSrc();
       var type = this.player_.currentType();
 
@@ -190,12 +223,18 @@ var ChromeCastButton = (function (_Button) {
     key: 'onMediaDiscovered',
     value: function onMediaDiscovered(media) {
       this.player_.loadTech_('Chromecast', {
+        type: 'cast',
+        src: this.player_.currentSrc(),
         apiMedia: media,
         apiSession: this.apiSession
       });
 
       this.casting = true;
-      this.player_.userActive(true);
+      //this.inactivityTimeout = this.player_.options_.inactivityTimeout;
+      //this.player_.options_.inactivityTimeout = 0;
+      //this.player_.userActive(true);
+      this.addClass('connected');
+      this.removeClass('error');
     }
   }, {
     key: 'onSessionUpdate',
@@ -208,14 +247,9 @@ var ChromeCastButton = (function (_Button) {
       }
     }
   }, {
-    key: 'onError',
-    value: function onError() {
-      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
-    }
-  }, {
     key: 'stopCasting',
     value: function stopCasting() {
-      return this.apiSession.stop(this.onStopAppSuccess.bind(this), this.onError.bind(this));
+      return this.apiSession.stop(this.onStopAppSuccess.bind(this), this.castError.bind(this));
     }
   }, {
     key: 'onStopAppSuccess',
@@ -230,6 +264,7 @@ var ChromeCastButton = (function (_Button) {
         });
       }
       this.player_.currentTime(time);
+      this.player_.options_.inactivityTimeout = this.inactivityTimeout;
       return this.apiSession = null;
     }
 
@@ -266,6 +301,8 @@ var ChromeCastButton = (function (_Button) {
 
 ChromeCastButton.prototype.tryingReconnect = 0;
 
+ChromeCastButton.prototype.inactivityTimeout = 2000;
+
 ChromeCastButton.prototype.controlText_ = 'Chromecast';
 
 //Replace videojs CaptionButton child with this one
@@ -274,8 +311,43 @@ ControlBar.prototype.options_.children.splice(12, 0, 'chromeCastButton');
 Component.registerComponent('ChromeCastButton', ChromeCastButton);
 exports['default'] = ChromeCastButton;
 module.exports = exports['default'];
+
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
+(function (global){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+
+var _videoJs2 = _interopRequireDefault(_videoJs);
+
+var _videojsChromecast = require('./videojs-chromecast');
+
+var _videojsChromecast2 = _interopRequireDefault(_videojsChromecast);
+
+/**
+ * The video.js playlist plugin. Invokes the playlist-maker to create a
+ * playlist function on the specific player.
+ *
+ * @param {Array} list
+ */
+var plugin = function plugin(options) {
+  (0, _videojsChromecast2['default'])(this, options);
+};
+
+_videoJs2['default'].plugin('chromecast', plugin);
+
+exports['default'] = plugin;
+module.exports = exports['default'];
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./videojs-chromecast":5}],4:[function(require,module,exports){
 (function (global){
 /**
  * @file chromecast.js
@@ -332,7 +404,6 @@ var Chromecast = (function (_Tech) {
 
     this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
     this.apiSession.addUpdateListener(this.onSessionUpdate.bind(this));
-    this.startProgressTimer();
     var tracks = this.textTracks();
     if (tracks) {
       (function () {
@@ -349,17 +420,25 @@ var Chromecast = (function (_Tech) {
 
     this.update();
     this.triggerReady();
+
+    this.trigger('loadstart');
+    this.trigger('loadedmetadata');
+    this.trigger('loadeddata');
+    this.trigger('canplay');
+    this.trigger('canplaythrough');
+    this.trigger('durationchange');
+
+    this.startProgressTimer();
   }
 
   _createClass(Chromecast, [{
     key: 'createEl',
     value: function createEl() {
-      var element = undefined;
-      element = _videoJs2['default'].createEl('div', {
+      var el = _videoJs2['default'].createEl('div', {
         id: this.options_.techId,
         className: 'vjs-tech vjs-tech-chromecast'
       });
-      return element;
+      return el;
     }
   }, {
     key: 'update',
@@ -392,18 +471,7 @@ var Chromecast = (function (_Tech) {
     key: 'onStopAppSuccess',
     value: function onStopAppSuccess() {
       this.clearInterval(this.timer);
-      this.casting = false;
-      this.removeClass('connected');
-      this.player_.src(this.player_.options_['sources']);
-      if (!this.paused) {
-        this.player_.one('seeked', function () {
-          return this.player_.play();
-        });
-      }
-      this.player_.currentTime(this.currentMediaTime);
-      this.player_.controls(false);
-      this.player_.apiMedia = null;
-      return this.apiSession = null;
+      this.apiMedia = null;
     }
   }, {
     key: 'onMediaStatusUpdate',
@@ -423,8 +491,8 @@ var Chromecast = (function (_Tech) {
           this.paused_ = true;
           break;
         case chrome.cast.media.PlayerState.PLAYING:
-          this.trigger('play');
           this.trigger('playing');
+          this.trigger('play');
           this.paused_ = false;
           break;
       }
@@ -433,7 +501,7 @@ var Chromecast = (function (_Tech) {
     key: 'startProgressTimer',
     value: function startProgressTimer() {
       this.clearInterval(this.timer);
-      return this.timer = this.setInterval(this.incrementMediaTime.bind(this), this.timerStep);
+      return this.timer = this.setInterval(this.incrementMediaTime, this.timerStep);
     }
 
     /**
@@ -479,12 +547,12 @@ var Chromecast = (function (_Tech) {
   }, {
     key: 'onTrackError',
     value: function onTrackError(e) {
-      return _videoJs2['default'].log('track error' + e.code + ' ' + e.description);
+      return _videoJs2['default'].log('Cast track Error: ' + JSON.stringify(e));
     }
   }, {
-    key: 'onError',
-    value: function onError(e) {
-      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
+    key: 'castError',
+    value: function castError(e) {
+      return _videoJs2['default'].log('Cast Error: ' + JSON.stringify(e));
     }
   }, {
     key: 'play',
@@ -493,7 +561,7 @@ var Chromecast = (function (_Tech) {
         return;
       }
       if (this.paused_) {
-        this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), this.onError.bind(this));
+        this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), this.castError.bind(this));
       }
       return this.paused_ = false;
     }
@@ -504,7 +572,7 @@ var Chromecast = (function (_Tech) {
         return;
       }
       if (!this.paused_) {
-        this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), this.onError.bind(this));
+        this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), this.castError.bind(this));
         return this.paused_ = true;
       }
     }
@@ -534,7 +602,7 @@ var Chromecast = (function (_Tech) {
       //if (this.player_.controlBar.progressControl.seekBar.videoWasPlaying) {
       //  request.resumeState = chrome.cast.media.ResumeState.PLAYBACK_START;
       //}
-      return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), this.onError.bind(this));
+      return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), this.castError.bind(this));
     }
   }, {
     key: 'onSeekSuccess',
@@ -576,13 +644,14 @@ var Chromecast = (function (_Tech) {
       this.muted_ = mute;
       request = new chrome.cast.media.VolumeRequest();
       request.volume = volume;
-      this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), this.onError.bind(this));
+      this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), this.castError.bind(this));
       return this.trigger('volumechange');
     }
   }, {
     key: 'mediaCommandSuccessCallback',
     value: function mediaCommandSuccessCallback(information, event) {
-      return _videoJs2['default'].log(information);
+      _videoJs2['default'].log(information);
+      _videoJs2['default'].log(event);
     }
   }, {
     key: 'muted',
@@ -608,19 +677,12 @@ var Chromecast = (function (_Tech) {
       // to allow `mediaKeys` to changed otherwise a DOMException is thrown.
       if (this.el()) {
         this.el().src = '';
-        if (this.el().setMediaKeys) {
-          this.el().setMediaKeys(null).then(callback, callback);
-        } else {
-          callback();
-        }
+        callback();
       }
     }
   }, {
     key: 'dispose',
     value: function dispose() {
-      if (this.mediaPlayer_) {
-        this.mediaPlayer_.reset();
-      }
       this.resetSrc_(Function.prototype);
       _get(Object.getPrototypeOf(Chromecast.prototype), 'dispose', this).call(this, this);
     }
@@ -635,10 +697,10 @@ Chromecast.prototype.options_ = {};
 
 Chromecast.prototype.timerStep = 1000;
 
-/* Dash Support Testing -------------------------------------------------------- */
+/* Chromecast Support Testing -------------------------------------------------------- */
 
 Chromecast.isSupported = function () {
-  return Html5.isSupported() && !!_node_modulesGlobalWindow2['default'].MediaSource;
+  return true;
 };
 
 // Add Source Handler pattern functions to this tech
@@ -741,6 +803,12 @@ Chromecast.prototype['movingMediaElementInDOM'] = false;
 Chromecast.prototype['featuresFullscreenResize'] = false;
 
 /*
+ * Set the tech's timeupdate event support status
+ * (this disables the manual timeupdate events of the Tech)
+ */
+Chromecast.prototype['featuresTimeupdateEvents'] = true;
+
+/*
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
@@ -767,20 +835,15 @@ Chromecast.prototype['featuresNativeAudioTracks'] = true;
  */
 Chromecast.prototype['featuresNativeVideoTracks'] = false;
 
-/*
- * Set the tech's timeupdate event support status
- * (this disables the manual timeupdate events of the Tech)
- */
-Chromecast.prototype['featuresTimeupdateEvents'] = true;
-
 _videoJs2['default'].options.chromecast = {};
 
 Component.registerComponent('Chromecast', Chromecast);
 Tech.registerTech('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];
+
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../../../node_modules/global/window":4}],3:[function(require,module,exports){
+},{"../../../node_modules/global/window":1}],5:[function(require,module,exports){
 (function (global){
 /**
  * ! videojs-chromecast - v1.0.0 - 2016-02-15
@@ -857,52 +920,6 @@ _videoJs2['default'].addLanguage('fr', {
 Component.registerComponent('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./component/control-bar/chromecast-button":1,"./tech/chromecast":2}],4:[function(require,module,exports){
-(function (global){
-if (typeof window !== "undefined") {
-    module.exports = window;
-} else if (typeof global !== "undefined") {
-    module.exports = global;
-} else if (typeof self !== "undefined"){
-    module.exports = self;
-} else {
-    module.exports = {};
-}
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
-(function (global){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-
-var _videoJs2 = _interopRequireDefault(_videoJs);
-
-var _videojsChromecast = require('./videojs-chromecast');
-
-var _videojsChromecast2 = _interopRequireDefault(_videojsChromecast);
-
-/**
- * The video.js playlist plugin. Invokes the playlist-maker to create a
- * playlist function on the specific player.
- *
- * @param {Array} list
- */
-var plugin = function plugin(options) {
-  (0, _videojsChromecast2['default'])(this, options);
-};
-
-_videoJs2['default'].plugin('chromecast', plugin);
-
-exports['default'] = plugin;
-module.exports = exports['default'];
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./videojs-chromecast":3}]},{},[5])(5)
-});
+},{"./component/control-bar/chromecast-button":2,"./tech/chromecast":4}]},{},[3]);

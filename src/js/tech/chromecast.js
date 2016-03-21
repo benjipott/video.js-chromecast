@@ -26,7 +26,6 @@ class Chromecast extends Tech {
 
     this.apiMedia.addUpdateListener(::this.onMediaStatusUpdate);
     this.apiSession.addUpdateListener(::this.onSessionUpdate);
-    this.startProgressTimer();
     let tracks = this.textTracks();
     if (tracks) {
       let changeHandler = ::this.handleTracksChange;
@@ -41,15 +40,23 @@ class Chromecast extends Tech {
 
     this.update();
     this.triggerReady();
+
+    this.trigger('loadstart');
+    this.trigger('loadedmetadata');
+    this.trigger('loadeddata');
+    this.trigger('canplay');
+    this.trigger('canplaythrough');
+    this.trigger('durationchange');
+
+    this.startProgressTimer();
   }
 
   createEl() {
-    let element;
-    element = videojs.createEl('div', {
+    let el = videojs.createEl('div', {
       id: this.options_.techId,
       className: 'vjs-tech vjs-tech-chromecast'
     });
-    return element;
+    return el;
   }
 
   update() {
@@ -78,18 +85,7 @@ class Chromecast extends Tech {
 
   onStopAppSuccess() {
     this.clearInterval(this.timer);
-    this.casting = false;
-    this.removeClass('connected');
-    this.player_.src(this.player_.options_['sources']);
-    if (!this.paused) {
-      this.player_.one('seeked', function () {
-        return this.player_.play();
-      });
-    }
-    this.player_.currentTime(this.currentMediaTime);
-    this.player_.controls(false);
-    this.player_.apiMedia = null;
-    return this.apiSession = null;
+    this.apiMedia = null;
   }
 
   onMediaStatusUpdate() {
@@ -108,8 +104,8 @@ class Chromecast extends Tech {
         this.paused_ = true;
         break;
       case chrome.cast.media.PlayerState.PLAYING:
-        this.trigger('play');
         this.trigger('playing');
+        this.trigger('play');
         this.paused_ = false;
         break;
     }
@@ -117,7 +113,7 @@ class Chromecast extends Tech {
 
   startProgressTimer() {
     this.clearInterval(this.timer);
-    return this.timer = this.setInterval(::this.incrementMediaTime, this.timerStep);
+    return this.timer = this.setInterval(this.incrementMediaTime, this.timerStep);
   }
 
   /**
@@ -159,11 +155,11 @@ class Chromecast extends Tech {
   }
 
   onTrackError(e) {
-    return videojs.log('track error' + e.code + ' ' + e.description);
+    return videojs.log('Cast track Error: ' + JSON.stringify(e));
   }
 
-  onError(e) {
-    return videojs.log('error' + e.code + ' ' + e.description);
+  castError(e) {
+    return videojs.log('Cast Error: ' + JSON.stringify(e));
   }
 
   play() {
@@ -171,7 +167,7 @@ class Chromecast extends Tech {
       return;
     }
     if (this.paused_) {
-      this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), ::this.onError);
+      this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), ::this.castError);
     }
     return this.paused_ = false;
   }
@@ -181,7 +177,7 @@ class Chromecast extends Tech {
       return;
     }
     if (!this.paused_) {
-      this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), ::this.onError);
+      this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), ::this.castError);
       return this.paused_ = true;
     }
   }
@@ -208,7 +204,7 @@ class Chromecast extends Tech {
     //if (this.player_.controlBar.progressControl.seekBar.videoWasPlaying) {
     //  request.resumeState = chrome.cast.media.ResumeState.PLAYBACK_START;
     //}
-    return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), ::this.onError);
+    return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), ::this.castError);
   }
 
   onSeekSuccess(position) {
@@ -243,14 +239,14 @@ class Chromecast extends Tech {
     this.muted_ = mute;
     request = new chrome.cast.media.VolumeRequest();
     request.volume = volume;
-    this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), ::this.onError);
+    this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), ::this.castError);
     return this.trigger('volumechange');
   }
 
   mediaCommandSuccessCallback(information, event) {
-    return videojs.log(information);
+    videojs.log(information);
+    videojs.log(event);
   }
-
 
   muted() {
     return this.muted_;
@@ -272,18 +268,11 @@ class Chromecast extends Tech {
     // to allow `mediaKeys` to changed otherwise a DOMException is thrown.
     if (this.el()) {
       this.el().src = '';
-      if (this.el().setMediaKeys) {
-        this.el().setMediaKeys(null).then(callback, callback);
-      } else {
-        callback();
-      }
+      callback();
     }
   }
 
   dispose() {
-    if (this.mediaPlayer_) {
-      this.mediaPlayer_.reset();
-    }
     this.resetSrc_(Function.prototype);
     super.dispose(this);
   }
@@ -296,12 +285,11 @@ Chromecast.prototype.options_ = {};
 
 Chromecast.prototype.timerStep = 1000;
 
-/* Dash Support Testing -------------------------------------------------------- */
+/* Chromecast Support Testing -------------------------------------------------------- */
 
 Chromecast.isSupported = function () {
-  return Html5.isSupported() && !!window.MediaSource;
+  return true;
 }
-;
 
 // Add Source Handler pattern functions to this tech
 Tech.withSourceHandlers(Chromecast);
@@ -406,6 +394,12 @@ Chromecast.prototype['movingMediaElementInDOM'] = false;
 Chromecast.prototype['featuresFullscreenResize'] = false;
 
 /*
+ * Set the tech's timeupdate event support status
+ * (this disables the manual timeupdate events of the Tech)
+ */
+Chromecast.prototype['featuresTimeupdateEvents'] = true;
+
+/*
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
@@ -431,12 +425,6 @@ Chromecast.prototype['featuresNativeAudioTracks'] = true;
  * @type {Boolean}
  */
 Chromecast.prototype['featuresNativeVideoTracks'] = false;
-
-/*
- * Set the tech's timeupdate event support status
- * (this disables the manual timeupdate events of the Tech)
- */
-Chromecast.prototype['featuresTimeupdateEvents'] = true;
 
 
 videojs.options.chromecast = {};

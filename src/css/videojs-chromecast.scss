@@ -61,6 +61,9 @@ $icons: (
   &.connected {
     color: #66A8CC;
   }
+  &.error {
+    color: #c70000;
+  }
 }
 
 // ChromecastTech
@@ -84,7 +87,7 @@ $icons: (
     left: 0;
     bottom: 0;
     background-color: #000;
-    opacity: 0.6;
+    background-color: rgba(#000, 0.3);
     cursor: default;
 
     .casting-information {
