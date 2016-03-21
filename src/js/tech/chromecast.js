@@ -47,8 +47,6 @@ class Chromecast extends Tech {
     this.trigger('canplay');
     this.trigger('canplaythrough');
     this.trigger('durationchange');
-
-    this.startProgressTimer();
   }
 
   createEl() {
@@ -63,17 +61,6 @@ class Chromecast extends Tech {
     this.el_.innerHTML = `<div class="casting-image" style="background-image: url('${this.options_.poster}')"></div><div class="casting-overlay"><div class="casting-information"><div class="casting-icon"></div><div class="casting-description"><small>${this.localize('CASTING TO')}</small><br>${this.receiver}</div></div></div>`;
   }
 
-  incrementMediaTime() {
-    if (this.apiMedia.playerState !== chrome.cast.media.PlayerState.PLAYING) {
-      return;
-    }
-    if (this.apiMedia.currentTime) {
-      this.trigger('timeupdate');
-    } else {
-      this.clearInterval(this.timer);
-    }
-  }
-
   onSessionUpdate(isAlive) {
     if (!this.apiMedia) {
       return;
@@ -84,7 +71,7 @@ class Chromecast extends Tech {
   }
 
   onStopAppSuccess() {
-    this.clearInterval(this.timer);
+    this.stopTrackingCurrentTime();
     this.apiMedia = null;
   }
 
@@ -111,10 +98,6 @@ class Chromecast extends Tech {
     }
   }
 
-  startProgressTimer() {
-    this.clearInterval(this.timer);
-    return this.timer = this.setInterval(this.incrementMediaTime, this.timerStep);
-  }
 
   /**
    * Set video
@@ -123,10 +106,7 @@ class Chromecast extends Tech {
    * @method setSrc
    */
   src(src) {
-    if (src === undefined) {
-      return this.el_.src;
-    } else {
-    }
+    //do nothing
   }
 
   handleTracksChange() {
@@ -243,9 +223,8 @@ class Chromecast extends Tech {
     return this.trigger('volumechange');
   }
 
-  mediaCommandSuccessCallback(information, event) {
+  mediaCommandSuccessCallback(information) {
     videojs.log(information);
-    videojs.log(event);
   }
 
   muted() {
@@ -262,14 +241,7 @@ class Chromecast extends Tech {
 
 
   resetSrc_(callback) {
-    // In Chrome, MediaKeys can NOT be changed when a src is loaded in the video element
-    // Dash.js has a bug where it doesn't correctly reset the data so we do it manually
-    // The order of these two lines is important. The video element's src must be reset
-    // to allow `mediaKeys` to changed otherwise a DOMException is thrown.
-    if (this.el()) {
-      this.el().src = '';
-      callback();
-    }
+    callback();
   }
 
   dispose() {
@@ -289,7 +261,7 @@ Chromecast.prototype.timerStep = 1000;
 
 Chromecast.isSupported = function () {
   return true;
-}
+};
 
 // Add Source Handler pattern functions to this tech
 Tech.withSourceHandlers(Chromecast);
@@ -397,13 +369,13 @@ Chromecast.prototype['featuresFullscreenResize'] = false;
  * Set the tech's timeupdate event support status
  * (this disables the manual timeupdate events of the Tech)
  */
-Chromecast.prototype['featuresTimeupdateEvents'] = true;
+Chromecast.prototype['featuresTimeupdateEvents'] = false;
 
 /*
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
-Chromecast.prototype['featuresProgressEvents'] = true;
+Chromecast.prototype['featuresProgressEvents'] = false;
 
 /*
  * Sets the tech's status on native text track support

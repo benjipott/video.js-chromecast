@@ -53,7 +53,6 @@ var Chromecast = (function (_Tech) {
 
     this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
     this.apiSession.addUpdateListener(this.onSessionUpdate.bind(this));
-    this.startProgressTimer();
     var tracks = this.textTracks();
     if (tracks) {
       (function () {
@@ -70,34 +69,28 @@ var Chromecast = (function (_Tech) {
 
     this.update();
     this.triggerReady();
+
+    this.trigger('loadstart');
+    this.trigger('loadedmetadata');
+    this.trigger('loadeddata');
+    this.trigger('canplay');
+    this.trigger('canplaythrough');
+    this.trigger('durationchange');
   }
 
   _createClass(Chromecast, [{
     key: 'createEl',
     value: function createEl() {
-      var element = undefined;
-      element = _videoJs2['default'].createEl('div', {
+      var el = _videoJs2['default'].createEl('div', {
         id: this.options_.techId,
         className: 'vjs-tech vjs-tech-chromecast'
       });
-      return element;
+      return el;
     }
   }, {
     key: 'update',
     value: function update() {
       this.el_.innerHTML = '<div class="casting-image" style="background-image: url(\'' + this.options_.poster + '\')"></div><div class="casting-overlay"><div class="casting-information"><div class="casting-icon"></div><div class="casting-description"><small>' + this.localize('CASTING TO') + '</small><br>' + this.receiver + '</div></div></div>';
-    }
-  }, {
-    key: 'incrementMediaTime',
-    value: function incrementMediaTime() {
-      if (this.apiMedia.playerState !== chrome.cast.media.PlayerState.PLAYING) {
-        return;
-      }
-      if (this.apiMedia.currentTime) {
-        this.trigger('timeupdate');
-      } else {
-        this.clearInterval(this.timer);
-      }
     }
   }, {
     key: 'onSessionUpdate',
@@ -112,19 +105,8 @@ var Chromecast = (function (_Tech) {
   }, {
     key: 'onStopAppSuccess',
     value: function onStopAppSuccess() {
-      this.clearInterval(this.timer);
-      this.casting = false;
-      this.removeClass('connected');
-      this.player_.src(this.player_.options_['sources']);
-      if (!this.paused) {
-        this.player_.one('seeked', function () {
-          return this.player_.play();
-        });
-      }
-      this.player_.currentTime(this.currentMediaTime);
-      this.player_.controls(false);
-      this.player_.apiMedia = null;
-      return this.apiSession = null;
+      this.stopTrackingCurrentTime();
+      this.apiMedia = null;
     }
   }, {
     key: 'onMediaStatusUpdate',
@@ -144,17 +126,11 @@ var Chromecast = (function (_Tech) {
           this.paused_ = true;
           break;
         case chrome.cast.media.PlayerState.PLAYING:
-          this.trigger('play');
           this.trigger('playing');
+          this.trigger('play');
           this.paused_ = false;
           break;
       }
-    }
-  }, {
-    key: 'startProgressTimer',
-    value: function startProgressTimer() {
-      this.clearInterval(this.timer);
-      return this.timer = this.setInterval(this.incrementMediaTime.bind(this), this.timerStep);
     }
 
     /**
@@ -166,9 +142,7 @@ var Chromecast = (function (_Tech) {
   }, {
     key: 'src',
     value: function src(_src) {
-      if (_src === undefined) {
-        return this.el_.src;
-      } else {}
+      //do nothing
     }
   }, {
     key: 'handleTracksChange',
@@ -200,12 +174,12 @@ var Chromecast = (function (_Tech) {
   }, {
     key: 'onTrackError',
     value: function onTrackError(e) {
-      return _videoJs2['default'].log('track error' + e.code + ' ' + e.description);
+      return _videoJs2['default'].log('Cast track Error: ' + JSON.stringify(e));
     }
   }, {
-    key: 'onError',
-    value: function onError(e) {
-      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
+    key: 'castError',
+    value: function castError(e) {
+      return _videoJs2['default'].log('Cast Error: ' + JSON.stringify(e));
     }
   }, {
     key: 'play',
@@ -214,7 +188,7 @@ var Chromecast = (function (_Tech) {
         return;
       }
       if (this.paused_) {
-        this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), this.onError.bind(this));
+        this.apiMedia.play(null, this.mediaCommandSuccessCallback.bind(this, 'Playing: ' + this.apiMedia.sessionId), this.castError.bind(this));
       }
       return this.paused_ = false;
     }
@@ -225,7 +199,7 @@ var Chromecast = (function (_Tech) {
         return;
       }
       if (!this.paused_) {
-        this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), this.onError.bind(this));
+        this.apiMedia.pause(null, this.mediaCommandSuccessCallback.bind(this, 'Paused: ' + this.apiMedia.sessionId), this.castError.bind(this));
         return this.paused_ = true;
       }
     }
@@ -255,7 +229,7 @@ var Chromecast = (function (_Tech) {
       //if (this.player_.controlBar.progressControl.seekBar.videoWasPlaying) {
       //  request.resumeState = chrome.cast.media.ResumeState.PLAYBACK_START;
       //}
-      return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), this.onError.bind(this));
+      return this.apiMedia.seek(request, this.onSeekSuccess.bind(this, position), this.castError.bind(this));
     }
   }, {
     key: 'onSeekSuccess',
@@ -297,13 +271,13 @@ var Chromecast = (function (_Tech) {
       this.muted_ = mute;
       request = new chrome.cast.media.VolumeRequest();
       request.volume = volume;
-      this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), this.onError.bind(this));
+      this.apiMedia.setVolume(request, this.mediaCommandSuccessCallback.bind(this, 'Volume changed'), this.castError.bind(this));
       return this.trigger('volumechange');
     }
   }, {
     key: 'mediaCommandSuccessCallback',
-    value: function mediaCommandSuccessCallback(information, event) {
-      return _videoJs2['default'].log(information);
+    value: function mediaCommandSuccessCallback(information) {
+      _videoJs2['default'].log(information);
     }
   }, {
     key: 'muted',
@@ -323,25 +297,11 @@ var Chromecast = (function (_Tech) {
   }, {
     key: 'resetSrc_',
     value: function resetSrc_(callback) {
-      // In Chrome, MediaKeys can NOT be changed when a src is loaded in the video element
-      // Dash.js has a bug where it doesn't correctly reset the data so we do it manually
-      // The order of these two lines is important. The video element's src must be reset
-      // to allow `mediaKeys` to changed otherwise a DOMException is thrown.
-      if (this.el()) {
-        this.el().src = '';
-        if (this.el().setMediaKeys) {
-          this.el().setMediaKeys(null).then(callback, callback);
-        } else {
-          callback();
-        }
-      }
+      callback();
     }
   }, {
     key: 'dispose',
     value: function dispose() {
-      if (this.mediaPlayer_) {
-        this.mediaPlayer_.reset();
-      }
       this.resetSrc_(Function.prototype);
       _get(Object.getPrototypeOf(Chromecast.prototype), 'dispose', this).call(this, this);
     }
@@ -356,10 +316,10 @@ Chromecast.prototype.options_ = {};
 
 Chromecast.prototype.timerStep = 1000;
 
-/* Dash Support Testing -------------------------------------------------------- */
+/* Chromecast Support Testing -------------------------------------------------------- */
 
 Chromecast.isSupported = function () {
-  return Html5.isSupported() && !!_node_modulesGlobalWindow2['default'].MediaSource;
+  return true;
 };
 
 // Add Source Handler pattern functions to this tech
@@ -462,10 +422,16 @@ Chromecast.prototype['movingMediaElementInDOM'] = false;
 Chromecast.prototype['featuresFullscreenResize'] = false;
 
 /*
+ * Set the tech's timeupdate event support status
+ * (this disables the manual timeupdate events of the Tech)
+ */
+Chromecast.prototype['featuresTimeupdateEvents'] = false;
+
+/*
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
-Chromecast.prototype['featuresProgressEvents'] = true;
+Chromecast.prototype['featuresProgressEvents'] = false;
 
 /*
  * Sets the tech's status on native text track support
@@ -487,12 +453,6 @@ Chromecast.prototype['featuresNativeAudioTracks'] = true;
  * @type {Boolean}
  */
 Chromecast.prototype['featuresNativeVideoTracks'] = false;
-
-/*
- * Set the tech's timeupdate event support status
- * (this disables the manual timeupdate events of the Tech)
- */
-Chromecast.prototype['featuresTimeupdateEvents'] = true;
 
 _videoJs2['default'].options.chromecast = {};
 

@@ -81,6 +81,30 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'castError',
     value: function castError(_castError) {
+
+      var error = {
+        code: _castError.code,
+        message: _castError.description
+      };
+
+      switch (_castError.code) {
+        case chrome.cast.ErrorCode.API_NOT_INITIALIZED:
+        case chrome.cast.ErrorCode.EXTENSION_MISSING:
+        case chrome.cast.ErrorCode.EXTENSION_NOT_COMPATIBLE:
+        case chrome.cast.ErrorCode.INVALID_PARAMETER:
+        case chrome.cast.ErrorCode.LOAD_MEDIA_FAILED:
+        case chrome.cast.ErrorCode.RECEIVER_UNAVAILABLE:
+        case chrome.cast.ErrorCode.SESSION_ERROR:
+        case chrome.cast.ErrorCode.CHANNEL_ERROR:
+        case chrome.cast.ErrorCode.TIMEOUT:
+          this.addClass('error');
+          break;
+        case chrome.cast.ErrorCode.CANCEL:
+          break;
+        default:
+          this.player_.error(error);
+          break;
+      }
       return _videoJs2['default'].log('Cast Error: ' + JSON.stringify(_castError));
     }
   }, {
@@ -91,6 +115,10 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'sessionJoinedListener',
     value: function sessionJoinedListener(session) {
+      if (session.media.length) {
+        this.apiSession = session;
+        this.onMediaDiscovered(session.media[0]);
+      }
       return console.log('Session joined');
     }
   }, {
@@ -123,8 +151,6 @@ var ChromeCastButton = (function (_Button) {
       _videoJs2['default'].log('Session initialized: ' + session.sessionId);
 
       this.apiSession = session;
-      this.addClass('connected');
-
       var source = this.player_.currentSrc();
       var type = this.player_.currentType();
 
@@ -182,12 +208,18 @@ var ChromeCastButton = (function (_Button) {
     key: 'onMediaDiscovered',
     value: function onMediaDiscovered(media) {
       this.player_.loadTech_('Chromecast', {
+        type: 'cast',
+        src: this.player_.currentSrc(),
         apiMedia: media,
         apiSession: this.apiSession
       });
 
       this.casting = true;
+      this.inactivityTimeout = this.player_.options_.inactivityTimeout;
+      this.player_.options_.inactivityTimeout = 0;
       this.player_.userActive(true);
+      this.addClass('connected');
+      this.removeClass('error');
     }
   }, {
     key: 'onSessionUpdate',
@@ -200,14 +232,9 @@ var ChromeCastButton = (function (_Button) {
       }
     }
   }, {
-    key: 'onError',
-    value: function onError() {
-      return _videoJs2['default'].log('error' + e.code + ' ' + e.description);
-    }
-  }, {
     key: 'stopCasting',
     value: function stopCasting() {
-      return this.apiSession.stop(this.onStopAppSuccess.bind(this), this.onError.bind(this));
+      return this.apiSession.stop(this.onStopAppSuccess.bind(this), this.castError.bind(this));
     }
   }, {
     key: 'onStopAppSuccess',
@@ -222,6 +249,7 @@ var ChromeCastButton = (function (_Button) {
         });
       }
       this.player_.currentTime(time);
+      this.player_.options_.inactivityTimeout = this.inactivityTimeout;
       return this.apiSession = null;
     }
 
@@ -258,10 +286,12 @@ var ChromeCastButton = (function (_Button) {
 
 ChromeCastButton.prototype.tryingReconnect = 0;
 
+ChromeCastButton.prototype.inactivityTimeout = 2000;
+
 ChromeCastButton.prototype.controlText_ = 'Chromecast';
 
 //Replace videojs CaptionButton child with this one
-ControlBar.prototype.options_.children.splice(12, 0, 'chromeCastButton');
+ControlBar.prototype.options_.children.splice(ControlBar.prototype.options_.children.length - 2, 0, 'chromeCastButton');
 
 Component.registerComponent('ChromeCastButton', ChromeCastButton);
 exports['default'] = ChromeCastButton;

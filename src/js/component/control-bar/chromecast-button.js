@@ -185,9 +185,9 @@ class ChromeCastButton extends Button {
     });
 
     this.casting = true;
-    //this.inactivityTimeout = this.player_.options_.inactivityTimeout;
-    //this.player_.options_.inactivityTimeout = 0;
-    //this.player_.userActive(true);
+    this.inactivityTimeout = this.player_.options_.inactivityTimeout;
+    this.player_.options_.inactivityTimeout = 0;
+    this.player_.userActive(true);
     this.addClass('connected');
     this.removeClass('error');
   }
@@ -251,7 +251,7 @@ ChromeCastButton.prototype.inactivityTimeout = 2000;
 ChromeCastButton.prototype.controlText_ = 'Chromecast';
 
 //Replace videojs CaptionButton child with this one
-ControlBar.prototype.options_.children.splice(12, 0, 'chromeCastButton');
+ControlBar.prototype.options_.children.splice(ControlBar.prototype.options_.children.length - 2, 0, 'chromeCastButton');
 
 Component.registerComponent('ChromeCastButton', ChromeCastButton);
 export default ChromeCastButton;
