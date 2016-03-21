@@ -251,7 +251,7 @@ ChromeCastButton.prototype.inactivityTimeout = 2000;
 ChromeCastButton.prototype.controlText_ = 'Chromecast';
 
 //Replace videojs CaptionButton child with this one
-ControlBar.prototype.options_.children.splice(ControlBar.prototype.options_.children.length - 2, 0, 'chromeCastButton');
+ControlBar.prototype.options_.children.splice(ControlBar.prototype.options_.children.length - 1, 0, 'chromeCastButton');
 
 Component.registerComponent('ChromeCastButton', ChromeCastButton);
 export default ChromeCastButton;
