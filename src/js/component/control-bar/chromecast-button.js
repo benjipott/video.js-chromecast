@@ -151,7 +151,7 @@ class ChromeCastButton extends Button {
         let remotePlTrack = remotePlTracks.trackElements_[i];
         let id = i + 1;
         let track = new chrome.cast.media.Track(id, chrome.cast.media.TrackType.TEXT);
-        track.trackContentId = plTrack.id || (remotePlTracks ? remotePlTrack.src : id);
+        track.trackContentId = plTrack.id || (remotePlTrack ? remotePlTrack.src : id);
         track.trackContentType = plTrack.type;
         track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
         track.name = plTrack.label;
