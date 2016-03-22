@@ -22,9 +22,9 @@ var _videoJs = require('video.js');
 
 var _videoJs2 = _interopRequireDefault(_videoJs);
 
-var _node_modulesGlobalWindow = require('../../../node_modules/global/window');
+var _globalWindow = require('global/window');
 
-var _node_modulesGlobalWindow2 = _interopRequireDefault(_node_modulesGlobalWindow);
+var _globalWindow2 = _interopRequireDefault(_globalWindow);
 
 var Component = _videoJs2['default'].getComponent('Component');
 var Tech = _videoJs2['default'].getComponent('Tech');

@@ -332,9 +332,9 @@ var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof globa
 
 var _videoJs2 = _interopRequireDefault(_videoJs);
 
-var _node_modulesGlobalWindow = require('../../../node_modules/global/window');
+var _globalWindow = require('global/window');
 
-var _node_modulesGlobalWindow2 = _interopRequireDefault(_node_modulesGlobalWindow);
+var _globalWindow2 = _interopRequireDefault(_globalWindow);
 
 var Component = _videoJs2['default'].getComponent('Component');
 var Tech = _videoJs2['default'].getComponent('Tech');
@@ -771,7 +771,7 @@ Tech.registerTech('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../../../node_modules/global/window":4}],3:[function(require,module,exports){
+},{"global/window":4}],3:[function(require,module,exports){
 (function (global){
 /**
  * ! videojs-chromecast - v1.0.0 - 2016-02-15
