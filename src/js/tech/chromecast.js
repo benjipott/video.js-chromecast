@@ -3,7 +3,6 @@
  * Chromecast Media Controller - Wrapper for HTML5 Media API
  */
 import videojs from 'video.js';
-import window from 'global/window';
 
 const Component = videojs.getComponent('Component');
 const Tech = videojs.getComponent('Tech');
@@ -22,7 +21,7 @@ class Chromecast extends Tech {
     super(options, ready);
     this.apiMedia = this.options_.source.apiMedia;
     this.apiSession = this.options_.source.apiSession;
-    this.receiver = this.apiSession.receiver.friendlyName
+    this.receiver = this.apiSession.receiver.friendlyName;
 
     this.apiMedia.addUpdateListener(::this.onMediaStatusUpdate);
     this.apiSession.addUpdateListener(::this.onSessionUpdate);
