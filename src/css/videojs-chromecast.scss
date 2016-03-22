@@ -54,9 +54,12 @@ $icons: (
 .video-js .vjs-chromecast-button {
 
   font-size: 0.7em;
-  top: 0.6em;
 
   @extend .vjs-icon-chromecast;
+
+  &:before {
+    line-height: 2.3;
+  }
 
   &.connected {
     color: #66A8CC;
