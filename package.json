@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "npm-run-all -p build:*",
-    "build:js": "npm-run-all mkdirs build:js:babel build:js:browserify build:js:bannerize build:js:uglify",
+    "build:js": "npm-run-all mkdirs build:js:babel build:js:browserify build:js:bannerize build:js:uglify copy",
     "build:js:babel": "babel src -d es5",
     "build:js:bannerize": "bannerize dist/videojs-chromecast.js --banner=scripts/banner.ejs",
     "build:js:browserify": "browserify . -s videojs-chromecast -o dist/videojs-chromecast.js",
@@ -14,6 +14,8 @@
     "build:css": "node-sass --include-path src --output-style compressed src/css/videojs-chromecast.scss -o dist",
     "build:test": "npm-run-all mkdirs build:test:browserify",
     "build:test:browserify": "browserify `find test -name '*.test.js'` -t babelify -o dist-test/videojs-chromecast.js",
+    "copy:font": "cp -R src/fonts dist/fonts",
+    "copy": "npm-run-all -p copy:*",
     "clean": "rm -rf dist dist-test es5",
     "docs": "doctoc README.md docs/api.md",
     "lint": "vjsstandard",
