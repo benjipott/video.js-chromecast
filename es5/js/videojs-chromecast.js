@@ -70,6 +70,10 @@ _videoJs2['default'].addLanguage('fr', {
   'CASTING TO': 'CAST EN COURS SUR'
 });
 
+var USER_AGENT = window.navigator.userAgent;
+
+_videoJs2['default'].browser.IS_EDGE = /Edge/i.test(USER_AGENT);
+
 Component.registerComponent('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];

@@ -59,7 +59,7 @@ var ChromeCastButton = (function (_Button) {
       var appId = undefined;
       var sessionRequest = undefined;
 
-      if (!_videoJs2['default'].browser.IS_CHROME) {
+      if (!_videoJs2['default'].browser.IS_CHROME || _videoJs2['default'].browser.IS_EDGE) {
         return;
       }
       if (!chrome.cast || !chrome.cast.isAvailable) {

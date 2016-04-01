@@ -1,6 +1,6 @@
 /**
  * videojs-chromecast
- * @version 1.0.0
+ * @version 2.0.0
  * @copyright 2016 Benjipott, Inc.
  * @license Apache-2.0
  */
@@ -67,7 +67,7 @@ var ChromeCastButton = (function (_Button) {
       var appId = undefined;
       var sessionRequest = undefined;
 
-      if (!_videoJs2['default'].browser.IS_CHROME) {
+      if (!_videoJs2['default'].browser.IS_CHROME || _videoJs2['default'].browser.IS_EDGE) {
         return;
       }
       if (!chrome.cast || !chrome.cast.isAvailable) {
@@ -840,6 +840,10 @@ _videoJs2['default'].addLanguage('it', {
 _videoJs2['default'].addLanguage('fr', {
   'CASTING TO': 'CAST EN COURS SUR'
 });
+
+var USER_AGENT = window.navigator.userAgent;
+
+_videoJs2['default'].browser.IS_EDGE = /Edge/i.test(USER_AGENT);
 
 Component.registerComponent('Chromecast', Chromecast);
 exports['default'] = Chromecast;
