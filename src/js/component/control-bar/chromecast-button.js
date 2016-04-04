@@ -118,11 +118,12 @@ class ChromeCastButton extends Button {
     let ref;
     let value;
 
-    videojs.log('Session initialized: ' + session.sessionId);
 
     this.apiSession = session;
     const source = this.player_.cache_.src;
     const type = this.player_.currentType();
+
+    videojs.log('Session initialized: ' + session.sessionId + ' source : ' + source + ' type : ' + type);
 
     mediaInfo = new chrome.cast.media.MediaInfo(source, type);
     mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
@@ -156,8 +157,9 @@ class ChromeCastButton extends Button {
         remotePlTrack = remotePlTracks.trackElements_[i];
         trackId++;
         track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.TEXT);
-        track.trackContentId = plTrack.id || (remotePlTrack ? remotePlTrack.src : trackId);
-        track.trackContentType = plTrack.type;
+        if (remotePlTrack) {
+          track.trackContentId = remotePlTrack.src;
+        }
         track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
         track.name = plTrack.label;
         track.language = plTrack.language;
@@ -172,23 +174,27 @@ class ChromeCastButton extends Button {
     }
     // Load/Add audio tracks
 
-    plTracks = this.player().audioTracks();
-    if (plTracks) {
-      tracks = [];
-      for (i = 0; i < plTracks.length; i++) {
-        plTrack = plTracks.tracks_[i];
-        trackId++;
-        track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.AUDIO);
-        track.trackContentId = plTrack.id;
-        track.subtype = null;
-        track.name = plTrack.label;
-        track.language = plTrack.language;
-        track.customData = null;
-        tracks.push(track);
+    try {
+      plTracks = this.player().audioTracks();
+      if (plTracks) {
+        for (i = 0; i < plTracks.length; i++) {
+          plTrack = plTracks.tracks_[i];
+          trackId++;
+          track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.AUDIO);
+          track.subtype = null;
+          track.name = plTrack.label;
+          track.language = plTrack.language;
+          track.customData = null;
+          tracks.push(track);
+        }
       }
+    } catch (e) {
+      videojs.log('get player audioTracks fail' + e);
     }
-    
-    mediaInfo.tracks = tracks;
+
+    if (tracks.length) {
+      mediaInfo.tracks = tracks;
+    }
 
     // Request load media source
     loadRequest = new chrome.cast.media.LoadRequest(mediaInfo);
@@ -203,7 +209,6 @@ class ChromeCastButton extends Button {
   onMediaDiscovered(media) {
     this.player_.loadTech_('Chromecast', {
       type: 'cast',
-      src: this.player_.currentSrc(),
       apiMedia: media,
       apiSession: this.apiSession
     });

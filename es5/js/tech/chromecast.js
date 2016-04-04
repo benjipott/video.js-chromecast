@@ -63,28 +63,36 @@ var Chromecast = (function (_Tech) {
       })();
     }
 
-    tracks = this.audioTracks();
-    if (tracks) {
-      (function () {
-        var changeHandler = _this.handleAudioTracksChange.bind(_this);
+    try {
+      tracks = this.audioTracks();
+      if (tracks) {
+        (function () {
+          var changeHandler = _this.handleAudioTracksChange.bind(_this);
 
-        tracks.addEventListener('change', changeHandler);
-        _this.on('dispose', function () {
-          tracks.removeEventListener('change', changeHandler);
-        });
-      })();
+          tracks.addEventListener('change', changeHandler);
+          _this.on('dispose', function () {
+            tracks.removeEventListener('change', changeHandler);
+          });
+        })();
+      }
+    } catch (e) {
+      _videoJs2['default'].log('get player audioTracks fail' + e);
     }
 
-    tracks = this.videoTracks();
-    if (tracks) {
-      (function () {
-        var changeHandler = _this.handleVideoTracksChange.bind(_this);
+    try {
+      tracks = this.videoTracks();
+      if (tracks) {
+        (function () {
+          var changeHandler = _this.handleVideoTracksChange.bind(_this);
 
-        tracks.addEventListener('change', changeHandler);
-        _this.on('dispose', function () {
-          tracks.removeEventListener('change', changeHandler);
-        });
-      })();
+          tracks.addEventListener('change', changeHandler);
+          _this.on('dispose', function () {
+            tracks.removeEventListener('change', changeHandler);
+          });
+        })();
+      }
+    } catch (e) {
+      _videoJs2['default'].log('get player videoTracks fail' + e);
     }
 
     this.update();
@@ -176,7 +184,7 @@ var Chromecast = (function (_Tech) {
         }
       }
 
-      if (this.apiMedia) {
+      if (this.apiMedia && trackInfo.length) {
         this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
         return this.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
       }
@@ -201,7 +209,7 @@ var Chromecast = (function (_Tech) {
         }
       }
 
-      if (this.apiMedia) {
+      if (this.apiMedia && trackInfo.length) {
         this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
         return this.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
       }
@@ -209,7 +217,7 @@ var Chromecast = (function (_Tech) {
   }, {
     key: 'onTrackSuccess',
     value: function onTrackSuccess(e) {
-      return _videoJs2['default'].log('track added');
+      return _videoJs2['default'].log('track added' + JSON.stringify(e));
     }
   }, {
     key: 'onTrackError',
@@ -287,7 +295,7 @@ var Chromecast = (function (_Tech) {
       if (!this.apiMedia) {
         return 0;
       }
-      return this.apiMedia.media.duration;
+      return this.apiMedia.media.duration || Infinity;
     }
   }, {
     key: 'controls',

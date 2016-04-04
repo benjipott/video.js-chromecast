@@ -37,26 +37,34 @@ class Chromecast extends Tech {
       this.handleTextTracksChange();
     }
 
-    tracks = this.audioTracks();
-    if (tracks) {
-      let changeHandler = ::this.handleAudioTracksChange;
+    try {
+      tracks = this.audioTracks();
+      if (tracks) {
+        let changeHandler = ::this.handleAudioTracksChange;
 
-      tracks.addEventListener('change', changeHandler);
-      this.on('dispose', function () {
-        tracks.removeEventListener('change', changeHandler);
-      });
+        tracks.addEventListener('change', changeHandler);
+        this.on('dispose', function () {
+          tracks.removeEventListener('change', changeHandler);
+        });
 
+      }
+    } catch (e) {
+      videojs.log('get player audioTracks fail' + e);
     }
 
-    tracks = this.videoTracks();
-    if (tracks) {
-      let changeHandler = ::this.handleVideoTracksChange;
+    try {
+      tracks = this.videoTracks();
+      if (tracks) {
+        let changeHandler = ::this.handleVideoTracksChange;
 
-      tracks.addEventListener('change', changeHandler);
-      this.on('dispose', function () {
-        tracks.removeEventListener('change', changeHandler);
-      });
+        tracks.addEventListener('change', changeHandler);
+        this.on('dispose', function () {
+          tracks.removeEventListener('change', changeHandler);
+        });
 
+      }
+    } catch (e) {
+      videojs.log('get player videoTracks fail' + e);
     }
 
     this.update();
@@ -141,7 +149,7 @@ class Chromecast extends Tech {
       }
     }
 
-    if (this.apiMedia) {
+    if (this.apiMedia && trackInfo.length) {
       this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
       return this.apiMedia.editTracksInfo(this.tracksInfoRequest, ::this.onTrackSuccess, ::this.onTrackError);
     }
@@ -166,14 +174,14 @@ class Chromecast extends Tech {
       }
     }
 
-    if (this.apiMedia) {
+    if (this.apiMedia && trackInfo.length) {
       this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
       return this.apiMedia.editTracksInfo(this.tracksInfoRequest, ::this.onTrackSuccess, ::this.onTrackError);
     }
   }
 
   onTrackSuccess(e) {
-    return videojs.log('track added');
+    return videojs.log('track added' + JSON.stringify(e));
   }
 
   onTrackError(e) {
@@ -241,7 +249,7 @@ class Chromecast extends Tech {
     if (!this.apiMedia) {
       return 0;
     }
-    return this.apiMedia.media.duration;
+    return this.apiMedia.media.duration || Infinity;
   }
 
   controls() {
