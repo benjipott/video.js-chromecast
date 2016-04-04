@@ -47,7 +47,7 @@ class ChromeCastButton extends Button {
       videojs.log('Cast APIs not available. Max reconnect attempt');
       return;
     }
-    this.show();
+
     videojs.log('Cast APIs are available');
     appId = this.options_.appId || chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
     sessionRequest = new chrome.cast.SessionRequest(appId);
