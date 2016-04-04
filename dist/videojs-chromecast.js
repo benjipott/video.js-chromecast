@@ -139,7 +139,7 @@ var ChromeCastButton = (function (_Button) {
   }, {
     key: 'doLaunch',
     value: function doLaunch() {
-      _videoJs2['default'].log('Cast video: ' + this.player_.currentSrc());
+      _videoJs2['default'].log('Cast video: ' + this.player_.cache_.src);
       if (this.apiInitialized) {
         return chrome.cast.requestSession(this.onSessionSuccess.bind(this), this.castError.bind(this));
       } else {
@@ -159,7 +159,7 @@ var ChromeCastButton = (function (_Button) {
       _videoJs2['default'].log('Session initialized: ' + session.sessionId);
 
       this.apiSession = session;
-      var source = this.player_.currentSrc();
+      var source = this.player_.cache_.src;
       var type = this.player_.currentType();
 
       mediaInfo = new chrome.cast.media.MediaInfo(source, type);
@@ -181,16 +181,45 @@ var ChromeCastButton = (function (_Button) {
       // Load/Add caption tracks
       var plTracks = this.player().textTracks();
       var remotePlTracks = this.player().remoteTextTrackEls();
+      var tracks = [];
+      var i = 0;
+      var remotePlTrack = undefined;
+      var plTrack = undefined;
+      var trackId = 0;
+      var track = undefined;
       if (plTracks) {
-        var tracks = [];
-        for (var i = 0; i < plTracks.length; i++) {
-          var plTrack = plTracks.tracks_[i];
-          var remotePlTrack = remotePlTracks.trackElements_[i];
-          var id = i + 1;
-          var track = new chrome.cast.media.Track(id, chrome.cast.media.TrackType.TEXT);
-          track.trackContentId = plTrack.id || (remotePlTrack ? remotePlTrack.src : id);
+        for (i = 0; i < plTracks.length; i++) {
+          plTrack = plTracks.tracks_[i];
+          remotePlTrack = remotePlTracks.trackElements_[i];
+          trackId++;
+          track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.TEXT);
+          track.trackContentId = plTrack.id || (remotePlTrack ? remotePlTrack.src : trackId);
           track.trackContentType = plTrack.type;
           track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
+          track.name = plTrack.label;
+          track.language = plTrack.language;
+          track.customData = null;
+          tracks.push(track);
+        }
+        mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
+        mediaInfo.textTrackStyle.backgroundColor = '#00000060';
+        mediaInfo.textTrackStyle.edgeType = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
+        mediaInfo.textTrackStyle.windowType = chrome.cast.media.TextTrackWindowType.ROUNDED_CORNERS;
+        mediaInfo.tracks = tracks;
+      }
+      // Load/Add audio tracks
+
+      plTracks = this.player().audioTracks();
+      if (plTracks) {
+        tracks = [];
+        for (i = 0; i < plTracks.length; i++) {
+          plTrack = plTracks.tracks_[i];
+          trackId++;
+          track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.AUDIO);
+          track.trackContentId = plTrack.id;
+          track.trackContentType = plTrack.type;
+          track.subtype = null;
           track.name = plTrack.label;
           track.language = plTrack.language;
           track.customData = null;
@@ -362,7 +391,7 @@ var Chromecast = (function (_Tech) {
     var tracks = this.textTracks();
     if (tracks) {
       (function () {
-        var changeHandler = _this.handleTracksChange.bind(_this);
+        var changeHandler = _this.handleTextTracksChange.bind(_this);
 
         tracks.addEventListener('change', changeHandler);
         _this.on('dispose', function () {
@@ -373,15 +402,32 @@ var Chromecast = (function (_Tech) {
       })();
     }
 
+    tracks = this.audioTracks();
+    if (tracks) {
+      (function () {
+        var changeHandler = _this.handleAudioTracksChange.bind(_this);
+
+        tracks.addEventListener('change', changeHandler);
+        _this.on('dispose', function () {
+          tracks.removeEventListener('change', changeHandler);
+        });
+      })();
+    }
+
+    tracks = this.videoTracks();
+    if (tracks) {
+      (function () {
+        var changeHandler = _this.handleVideoTracksChange.bind(_this);
+
+        tracks.addEventListener('change', changeHandler);
+        _this.on('dispose', function () {
+          tracks.removeEventListener('change', changeHandler);
+        });
+      })();
+    }
+
     this.update();
     this.triggerReady();
-
-    this.trigger('loadstart');
-    this.trigger('loadedmetadata');
-    this.trigger('loadeddata');
-    this.trigger('canplay');
-    this.trigger('canplaythrough');
-    this.trigger('durationchange');
   }
 
   _createClass(Chromecast, [{
@@ -451,8 +497,35 @@ var Chromecast = (function (_Tech) {
       //do nothing
     }
   }, {
-    key: 'handleTracksChange',
-    value: function handleTracksChange() {
+    key: 'handleAudioTracksChange',
+    value: function handleAudioTracksChange() {
+      var trackInfo = [];
+      var tTracks = this.textTracks();
+      var tracks = this.audioTracks();
+
+      if (!tracks) {
+        return;
+      }
+
+      for (var i = 0; i < tracks.length; i++) {
+        var track = tracks[i];
+        if (track['enabled']) {
+          //set id of cuurentTrack audio
+          trackInfo.push(i + 1 + tTracks.length);
+        }
+      }
+
+      if (this.apiMedia) {
+        this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
+        return this.apiMedia.editTracksInfo(this.tracksInfoRequest, this.onTrackSuccess.bind(this), this.onTrackError.bind(this));
+      }
+    }
+  }, {
+    key: 'handleVideoTracksChange',
+    value: function handleVideoTracksChange() {}
+  }, {
+    key: 'handleTextTracksChange',
+    value: function handleTextTracksChange() {
       var trackInfo = [];
       var tracks = this.textTracks();
 
@@ -520,7 +593,7 @@ var Chromecast = (function (_Tech) {
       if (!this.apiMedia) {
         return 0;
       }
-      return this.apiMedia.currentTime;
+      return this.apiMedia.getEstimatedTime();
     }
   }, {
     key: 'setCurrentTime',

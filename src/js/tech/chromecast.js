@@ -27,7 +27,7 @@ class Chromecast extends Tech {
     this.apiSession.addUpdateListener(::this.onSessionUpdate);
     let tracks = this.textTracks();
     if (tracks) {
-      let changeHandler = ::this.handleTracksChange;
+      let changeHandler = ::this.handleTextTracksChange;
 
       tracks.addEventListener('change', changeHandler);
       this.on('dispose', function () {
@@ -37,15 +37,31 @@ class Chromecast extends Tech {
       this.handleTracksChange();
     }
 
+    tracks = this.audioTracks();
+    if (tracks) {
+      let changeHandler = ::this.handleAudioTracksChange;
+
+      tracks.addEventListener('change', changeHandler);
+      this.on('dispose', function () {
+        tracks.removeEventListener('change', changeHandler);
+      });
+
+    }
+
+    tracks = this.videoTracks();
+    if (tracks) {
+      let changeHandler = ::this.handleVideoTracksChange;
+
+      tracks.addEventListener('change', changeHandler);
+      this.on('dispose', function () {
+        tracks.removeEventListener('change', changeHandler);
+      });
+
+    }
+
     this.update();
     this.triggerReady();
 
-    this.trigger('loadstart');
-    this.trigger('loadedmetadata');
-    this.trigger('loadeddata');
-    this.trigger('canplay');
-    this.trigger('canplaythrough');
-    this.trigger('durationchange');
   }
 
   createEl() {
@@ -108,7 +124,34 @@ class Chromecast extends Tech {
     //do nothing
   }
 
-  handleTracksChange() {
+  handleAudioTracksChange() {
+    let trackInfo = [];
+    let tTracks = this.textTracks();
+    let tracks = this.audioTracks();
+
+    if (!tracks) {
+      return;
+    }
+
+    for (let i = 0; i < tracks.length; i++) {
+      let track = tracks[i];
+      if (track['enabled']) {
+        //set id of cuurentTrack audio
+        trackInfo.push((i + 1) + tTracks.length);
+      }
+    }
+
+    if (this.apiMedia) {
+      this.tracksInfoRequest = new chrome.cast.media.EditTracksInfoRequest(trackInfo);
+      return this.apiMedia.editTracksInfo(this.tracksInfoRequest, ::this.onTrackSuccess, ::this.onTrackError);
+    }
+  }
+
+  handleVideoTracksChange() {
+
+  }
+
+  handleTextTracksChange() {
     let trackInfo = [];
     let tracks = this.textTracks();
 
@@ -169,7 +212,7 @@ class Chromecast extends Tech {
     if (!this.apiMedia) {
       return 0;
     }
-    return this.apiMedia.currentTime;
+    return this.apiMedia.getEstimatedTime();
   }
 
   setCurrentTime(position) {

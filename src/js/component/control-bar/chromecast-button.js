@@ -102,7 +102,7 @@ class ChromeCastButton extends Button {
   }
 
   doLaunch() {
-    videojs.log('Cast video: ' + (this.player_.currentSrc()));
+    videojs.log('Cast video: ' + (this.player_.cache_.src));
     if (this.apiInitialized) {
       return chrome.cast.requestSession(::this.onSessionSuccess, ::this.castError);
     } else {
@@ -121,7 +121,7 @@ class ChromeCastButton extends Button {
     videojs.log('Session initialized: ' + session.sessionId);
 
     this.apiSession = session;
-    const source = this.player_.currentSrc();
+    const source = this.player_.cache_.src;
     const type = this.player_.currentType();
 
     mediaInfo = new chrome.cast.media.MediaInfo(source, type);
@@ -142,18 +142,47 @@ class ChromeCastButton extends Button {
     }
 
     // Load/Add caption tracks
-    const plTracks = this.player().textTracks();
+    let plTracks = this.player().textTracks();
     const remotePlTracks = this.player().remoteTextTrackEls();
+    let tracks = [];
+    let i = 0;
+    let remotePlTrack;
+    let plTrack;
+    let trackId = 0;
+    let track;
     if (plTracks) {
-      let tracks = [];
-      for (let i = 0; i < plTracks.length; i++) {
-        let plTrack = plTracks.tracks_[i];
-        let remotePlTrack = remotePlTracks.trackElements_[i];
-        let id = i + 1;
-        let track = new chrome.cast.media.Track(id, chrome.cast.media.TrackType.TEXT);
-        track.trackContentId = plTrack.id || (remotePlTrack ? remotePlTrack.src : id);
+      for (i = 0; i < plTracks.length; i++) {
+        plTrack = plTracks.tracks_[i];
+        remotePlTrack = remotePlTracks.trackElements_[i];
+        trackId++;
+        track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.TEXT);
+        track.trackContentId = plTrack.id || (remotePlTrack ? remotePlTrack.src : trackId);
         track.trackContentType = plTrack.type;
         track.subtype = chrome.cast.media.TextTrackType.CAPTIONS;
+        track.name = plTrack.label;
+        track.language = plTrack.language;
+        track.customData = null;
+        tracks.push(track);
+      }
+      mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+      mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
+      mediaInfo.textTrackStyle.backgroundColor = '#00000060';
+      mediaInfo.textTrackStyle.edgeType = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
+      mediaInfo.textTrackStyle.windowType = chrome.cast.media.TextTrackWindowType.ROUNDED_CORNERS;
+      mediaInfo.tracks = tracks;
+    }
+    // Load/Add audio tracks
+
+    plTracks = this.player().audioTracks();
+    if (plTracks) {
+      tracks = [];
+      for (i = 0; i < plTracks.length; i++) {
+        plTrack = plTracks.tracks_[i];
+        trackId++;
+        track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.AUDIO);
+        track.trackContentId = plTrack.id;
+        track.trackContentType = plTrack.type;
+        track.subtype = null;
         track.name = plTrack.label;
         track.language = plTrack.language;
         track.customData = null;
