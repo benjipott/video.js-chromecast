@@ -34,7 +34,7 @@ class Chromecast extends Tech {
         tracks.removeEventListener('change', changeHandler);
       });
 
-      this.handleTracksChange();
+      this.handleTextTracksChange();
     }
 
     tracks = this.audioTracks();

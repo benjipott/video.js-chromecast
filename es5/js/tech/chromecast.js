@@ -59,7 +59,7 @@ var Chromecast = (function (_Tech) {
           tracks.removeEventListener('change', changeHandler);
         });
 
-        _this.handleTracksChange();
+        _this.handleTextTracksChange();
       })();
     }
 
