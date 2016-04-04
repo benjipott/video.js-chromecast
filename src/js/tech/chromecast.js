@@ -132,6 +132,13 @@ class Chromecast extends Tech {
     //do nothing
   }
 
+  currentSrc() {
+    if (!this.apiMedia) {
+      return;
+    }
+    return this.apiMedia.media.contentId;
+  }
+
   handleAudioTracksChange() {
     let trackInfo = [];
     let tTracks = this.textTracks();

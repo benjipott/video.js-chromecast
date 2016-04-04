@@ -503,6 +503,14 @@ var Chromecast = (function (_Tech) {
       //do nothing
     }
   }, {
+    key: 'currentSrc',
+    value: function currentSrc() {
+      if (!this.apiMedia) {
+        return;
+      }
+      return this.apiMedia.media.contentId;
+    }
+  }, {
     key: 'handleAudioTracksChange',
     value: function handleAudioTracksChange() {
       var trackInfo = [];
