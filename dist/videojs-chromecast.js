@@ -206,7 +206,6 @@ var ChromeCastButton = (function (_Button) {
         mediaInfo.textTrackStyle.backgroundColor = '#00000060';
         mediaInfo.textTrackStyle.edgeType = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
         mediaInfo.textTrackStyle.windowType = chrome.cast.media.TextTrackWindowType.ROUNDED_CORNERS;
-        mediaInfo.tracks = tracks;
       }
       // Load/Add audio tracks
 
@@ -218,20 +217,15 @@ var ChromeCastButton = (function (_Button) {
           trackId++;
           track = new chrome.cast.media.Track(trackId, chrome.cast.media.TrackType.AUDIO);
           track.trackContentId = plTrack.id;
-          track.trackContentType = plTrack.type;
           track.subtype = null;
           track.name = plTrack.label;
           track.language = plTrack.language;
           track.customData = null;
           tracks.push(track);
         }
-        mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
-        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
-        mediaInfo.textTrackStyle.backgroundColor = '#00000060';
-        mediaInfo.textTrackStyle.edgeType = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
-        mediaInfo.textTrackStyle.windowType = chrome.cast.media.TextTrackWindowType.ROUNDED_CORNERS;
-        mediaInfo.tracks = tracks;
       }
+
+      mediaInfo.tracks = tracks;
 
       // Request load media source
       loadRequest = new chrome.cast.media.LoadRequest(mediaInfo);
