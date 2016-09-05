@@ -1,6 +1,6 @@
 /**
  * video.js-chromecast
- * @version 2.0.1
+ * @version 2.0.6
  * @copyright 2016 Benjipott, Inc.
  * @license Apache-2.0
  */
