@@ -15,9 +15,9 @@ let Component = videojs.getComponent('Component');
  * @param options (optional) {object} configuration for the plugin
  */
 class Chromecast extends Component {
-  constructor(player, options) {
-    super(player, options);
-  }
+    constructor (player, options) {
+        super(player, options);
+    }
 }
 
 
@@ -25,23 +25,23 @@ Chromecast.prototype.options_ = {};
 
 
 // register the plugin
-videojs.options.children.chromecast = {};
+videojs.options.children.push('chromecast');
 
 
 videojs.addLanguage('en', {
-  'CASTING TO': 'WIEDERGABE AUF'
+    'CASTING TO': 'WIEDERGABE AUF'
 });
 
 videojs.addLanguage('de', {
-  'CASTING TO': 'WIEDERGABE AUF'
+    'CASTING TO': 'WIEDERGABE AUF'
 });
 
 videojs.addLanguage('it', {
-  'CASTING TO': 'PLAYBACK SU'
+    'CASTING TO': 'PLAYBACK SU'
 });
 
 videojs.addLanguage('fr', {
-  'CASTING TO': 'CAST EN COURS SUR'
+    'CASTING TO': 'CAST EN COURS SUR'
 });
 
 const USER_AGENT = window.navigator.userAgent;

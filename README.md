@@ -46,9 +46,6 @@ For full details on how to use the playlist plugin can be found in [the API docu
 
 ```js
 var player = videojs('video');
-
-player.chromecast();
-
 ```
 
 ## License

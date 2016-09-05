@@ -7,7 +7,7 @@
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-  value: true
+    value: true
 });
 
 var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
@@ -38,36 +38,36 @@ var Component = _videoJs2['default'].getComponent('Component');
  */
 
 var Chromecast = (function (_Component) {
-  _inherits(Chromecast, _Component);
+    _inherits(Chromecast, _Component);
 
-  function Chromecast(player, options) {
-    _classCallCheck(this, Chromecast);
+    function Chromecast(player, options) {
+        _classCallCheck(this, Chromecast);
 
-    _get(Object.getPrototypeOf(Chromecast.prototype), 'constructor', this).call(this, player, options);
-  }
+        _get(Object.getPrototypeOf(Chromecast.prototype), 'constructor', this).call(this, player, options);
+    }
 
-  return Chromecast;
+    return Chromecast;
 })(Component);
 
 Chromecast.prototype.options_ = {};
 
 // register the plugin
-_videoJs2['default'].options.children.chromecast = {};
+_videoJs2['default'].options.children.push('chromecast');
 
 _videoJs2['default'].addLanguage('en', {
-  'CASTING TO': 'WIEDERGABE AUF'
+    'CASTING TO': 'WIEDERGABE AUF'
 });
 
 _videoJs2['default'].addLanguage('de', {
-  'CASTING TO': 'WIEDERGABE AUF'
+    'CASTING TO': 'WIEDERGABE AUF'
 });
 
 _videoJs2['default'].addLanguage('it', {
-  'CASTING TO': 'PLAYBACK SU'
+    'CASTING TO': 'PLAYBACK SU'
 });
 
 _videoJs2['default'].addLanguage('fr', {
-  'CASTING TO': 'CAST EN COURS SUR'
+    'CASTING TO': 'CAST EN COURS SUR'
 });
 
 var USER_AGENT = window.navigator.userAgent;

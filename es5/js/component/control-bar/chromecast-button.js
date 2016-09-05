@@ -40,9 +40,10 @@ var ChromeCastButton = (function (_Button) {
     function ChromeCastButton(player, options) {
         _classCallCheck(this, ChromeCastButton);
 
-        _get(Object.getPrototypeOf(ChromeCastButton.prototype), 'constructor', this).call(this, player, options);
+        _get(Object.getPrototypeOf(ChromeCastButton.prototype), 'constructor', this).call(this, player, options_);
         this.hide();
         this.initializeApi();
+        options.appId = player.options_.chromecast.appId;
         player.chromecast = this;
     }
 
