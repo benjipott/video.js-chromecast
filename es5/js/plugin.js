@@ -21,7 +21,8 @@ var _videojsChromecast2 = _interopRequireDefault(_videojsChromecast);
  * @param {Array} list
  */
 var plugin = function plugin(options) {
-  (0, _videojsChromecast2['default'])(this, options);
+  var player = this;
+  player.addChild('Chromecast', options);
 };
 
 _videoJs2['default'].plugin('chromecast', plugin);

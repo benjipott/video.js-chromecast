@@ -32,7 +32,10 @@
 <script>
 
     var player = videojs(document.querySelector('video'), {
-        language: 'fr'
+        language: 'fr',
+        plugins: {
+            chromecast: {}
+        }
     }).toJSON();
 
 </script>

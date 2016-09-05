@@ -1,5 +1,5 @@
 import videojs from 'video.js';
-import chromecast from './videojs-chromecast';
+import Chromecast from './videojs-chromecast';
 
 /**
  * The video.js playlist plugin. Invokes the playlist-maker to create a
@@ -8,7 +8,8 @@ import chromecast from './videojs-chromecast';
  * @param {Array} list
  */
 const plugin = function (options) {
-  chromecast(this, options);
+    let player = this
+    player.addChild('Chromecast', options)
 };
 
 videojs.plugin('chromecast', plugin);
