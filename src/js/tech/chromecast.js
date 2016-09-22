@@ -23,8 +23,19 @@ class Chromecast extends Tech {
         this.apiSession = this.options_.source.apiSession;
         this.receiver = this.apiSession.receiver.friendlyName;
 
-        this.apiMedia.addUpdateListener(::this.onMediaStatusUpdate);
-        this.apiSession.addUpdateListener(::this.onSessionUpdate);
+        let mediaStatusUpdateHandler = ::this.onMediaStatusUpdate;
+        let sessionUpdateHanlder = ::this.onSessionUpdate;
+
+        this.apiMedia.addUpdateListener(mediaStatusUpdateHandler);
+        this.apiSession.addUpdateListener(sessionUpdateHanlder);
+
+        this.on('dispose', () => {
+          this.apiMedia.removeUpdateListener(mediaStatusUpdateHandler);
+          this.apiSession.removeUpdateListener(sessionUpdateHanlder);
+          this.onMediaStatusUpdate()
+          this.onSessionUpdate(false);
+        });
+
         let tracks = this.textTracks();
         if (tracks) {
             let changeHandler = ::this.handleTextTracksChange;
