@@ -1,6 +1,6 @@
 {
   "name": "videojs-chromecast",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Chromecast plugin for videojs",
   "main": "es5/js/plugin.js",
   "scripts": {
