@@ -383,8 +383,19 @@ var Chromecast = (function (_Tech) {
         this.apiSession = this.options_.source.apiSession;
         this.receiver = this.apiSession.receiver.friendlyName;
 
-        this.apiMedia.addUpdateListener(this.onMediaStatusUpdate.bind(this));
-        this.apiSession.addUpdateListener(this.onSessionUpdate.bind(this));
+        var mediaStatusUpdateHandler = this.onMediaStatusUpdate.bind(this);
+        var sessionUpdateHanlder = this.onSessionUpdate.bind(this);
+
+        this.apiMedia.addUpdateListener(mediaStatusUpdateHandler);
+        this.apiSession.addUpdateListener(sessionUpdateHanlder);
+
+        this.on('dispose', function () {
+            _this.apiMedia.removeUpdateListener(mediaStatusUpdateHandler);
+            _this.apiSession.removeUpdateListener(sessionUpdateHanlder);
+            _this.onMediaStatusUpdate();
+            _this.onSessionUpdate(false);
+        });
+
         var tracks = this.textTracks();
         if (tracks) {
             (function () {
