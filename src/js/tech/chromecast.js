@@ -119,6 +119,8 @@ class Chromecast extends Tech {
                 break;
             case chrome.cast.media.PlayerState.IDLE:
                 this.trigger('timeupdate');
+                this.trigger('ended');
+
                 break;
             case chrome.cast.media.PlayerState.PAUSED:
                 this.trigger('pause');
@@ -139,9 +141,7 @@ class Chromecast extends Tech {
      * @param {Object=} src Source object
      * @method setSrc
      */
-    src (src) {
-        //do nothing
-    }
+   src (src) {}
 
     currentSrc () {
         if (!this.apiMedia) {
@@ -232,6 +232,10 @@ class Chromecast extends Tech {
 
     paused () {
         return this.paused_;
+    }
+
+    ended () {
+      return chrome.cast.media.IdleReason === "FINISHED";
     }
 
     currentTime () {
