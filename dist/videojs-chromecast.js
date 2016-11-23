@@ -46,6 +46,8 @@ var ChromeCastButton = (function (_Button) {
     _inherits(ChromeCastButton, _Button);
 
     function ChromeCastButton(player, options) {
+        var _this = this;
+
         _classCallCheck(this, ChromeCastButton);
 
         _get(Object.getPrototypeOf(ChromeCastButton.prototype), 'constructor', this).call(this, player, options);
@@ -53,6 +55,12 @@ var ChromeCastButton = (function (_Button) {
         this.initializeApi();
         options.appId = player.options_.chromecast.appId;
         player.chromecast = this;
+
+        this.on(player, 'loadstart', function () {
+            if (_this.casting && _this.apiInitialized) {
+                _this.onSessionSuccess(_this.apiSession);
+            }
+        });
     }
 
     /**
@@ -488,6 +496,8 @@ var Chromecast = (function (_Tech) {
                     break;
                 case chrome.cast.media.PlayerState.IDLE:
                     this.trigger('timeupdate');
+                    this.trigger('ended');
+
                     break;
                 case chrome.cast.media.PlayerState.PAUSED:
                     this.trigger('pause');
@@ -509,9 +519,7 @@ var Chromecast = (function (_Tech) {
          */
     }, {
         key: 'src',
-        value: function src(_src) {
-            //do nothing
-        }
+        value: function src(_src) {}
     }, {
         key: 'currentSrc',
         value: function currentSrc() {
@@ -610,6 +618,11 @@ var Chromecast = (function (_Tech) {
         key: 'paused',
         value: function paused() {
             return this.paused_;
+        }
+    }, {
+        key: 'ended',
+        value: function ended() {
+            return chrome.cast.media.IdleReason === "FINISHED";
         }
     }, {
         key: 'currentTime',
