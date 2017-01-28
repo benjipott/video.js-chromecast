@@ -38,6 +38,8 @@ var ChromeCastButton = (function (_Button) {
     _inherits(ChromeCastButton, _Button);
 
     function ChromeCastButton(player, options) {
+        var _this = this;
+
         _classCallCheck(this, ChromeCastButton);
 
         _get(Object.getPrototypeOf(ChromeCastButton.prototype), 'constructor', this).call(this, player, options);
@@ -45,6 +47,12 @@ var ChromeCastButton = (function (_Button) {
         this.initializeApi();
         options.appId = player.options_.chromecast.appId;
         player.chromecast = this;
+
+        this.on(player, 'loadstart', function () {
+            if (_this.casting && _this.apiInitialized) {
+                _this.onSessionSuccess(_this.apiSession);
+            }
+        });
     }
 
     /**

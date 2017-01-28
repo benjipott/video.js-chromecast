@@ -23,6 +23,12 @@ class ChromeCastButton extends Button {
         this.initializeApi();
         options.appId = player.options_.chromecast.appId;
         player.chromecast = this;
+
+        this.on(player, 'loadstart', () => {
+          if (this.casting && this.apiInitialized) {
+            this.onSessionSuccess(this.apiSession);
+          }
+        });
     }
 
     /**
