@@ -34,8 +34,10 @@ Include videojs-chromecast on your website using the tool(s) of your choice.
 The simplest method of inclusion is a `<script>` tag after the video.js `<script>` tag:
 
 ```html
-<script src="path/to/video.js/dist/video.js"></script>
-<script src="path/to/videojs-chromecast/dist/videojs-chromecast.js"></script>
+<head data-cast-api-enabled="true"> <!-- allow chromecast extention -->
+<script src="http://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script> <!-- add chromecast sdk -->
+<script src="path/to/video.js/dist/video.js"></script><!-- add video.js sdk -->
+<script src="path/to/videojs-chromecast/dist/videojs-chromecast.js"></script><!-- add plugin -->
 ```
 
 When installed via npm, videojs-chromecast supports Browserify-based workflows out of the box.
