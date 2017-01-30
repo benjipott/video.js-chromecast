@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/benjipott/video.js-chromecast.svg?branch=master)](https://travis-ci.org/benjipott/video.js-chromecast)
 
 # Chromecast Plugin for video.js 5.*
+![Alt text](https://cloud.githubusercontent.com/assets/3854951/22416418/c6ef4b6a-e6ce-11e6-95dd-e8f04719d68f.png "Sample image")
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
