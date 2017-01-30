@@ -44,7 +44,7 @@ When installed via npm, videojs-chromecast supports Browserify-based workflows o
 
 ## Basic Usage
 
-For full details on how to use the playlist plugin can be found in [the API documentation](docs/api.md).
+For full details on how to use chromecast in [the API documentation](docs/api.md).
 
 ```js
 var player = videojs('video',{
@@ -52,6 +52,21 @@ var player = videojs('video',{
      appId:'APP-ID'
   }
 });
+```
+## Options
+
+Chromecast sdk mediaInfo use poster image 
+
+```
+options :{
+  chromecast:{
+     appId:'APP-ID',
+     metadata:{
+       title:'Title display on tech wrapper',
+       subtitle:'Synopsis display on tech wrapper',
+     }
+  }
+}
 ```
 
 ## License
