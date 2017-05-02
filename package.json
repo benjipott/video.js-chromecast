@@ -60,6 +60,8 @@
     "index.html",
     "scripts/",
     "src/js/",
+    "src/css/",
+    "src/fonts/",
     "test/"
   ],
   "babel": {
