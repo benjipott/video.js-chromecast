@@ -61,6 +61,12 @@ var ChromeCastButton = (function (_Button) {
                 _this.onSessionSuccess(_this.apiSession);
             }
         });
+
+        this.on(player, 'dispose', function () {
+            if (_this.casting && _this.apiSession) {
+                _this.apiSession.stop(null, null);
+            }
+        });
     }
 
     /**

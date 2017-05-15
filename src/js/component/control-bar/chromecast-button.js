@@ -29,6 +29,12 @@ class ChromeCastButton extends Button {
             this.onSessionSuccess(this.apiSession);
           }
         });
+
+        this.on(player, 'dispose', () => {
+          if (this.casting && this.apiSession) {
+            this.apiSession.stop(null, null);
+          }
+        });
     }
 
     /**
