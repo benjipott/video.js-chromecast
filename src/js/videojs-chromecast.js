@@ -44,9 +44,5 @@ videojs.addLanguage('fr', {
     'CASTING TO': 'CAST EN COURS SUR'
 });
 
-const USER_AGENT = window.navigator.userAgent;
-
-videojs.browser.IS_EDGE = (/Edge/i).test(USER_AGENT);
-
 Component.registerComponent('Chromecast', Chromecast);
 export default Chromecast;
