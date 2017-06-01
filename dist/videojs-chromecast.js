@@ -179,8 +179,8 @@ var ChromeCastButton = (function (_Button) {
 
             mediaInfo = new chrome.cast.media.MediaInfo(source, type);
             mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-            if (this.options_.metadata) {
-                ref = this.options_.metadata;
+            if (this.options_.playerOptions.chromecast.metadata) {
+                ref = this.options_.playerOptions.chromecast.metadata;
                 for (key in ref) {
                     value = ref[key];
                     mediaInfo.metadata[key] = value;
@@ -878,8 +878,8 @@ Chromecast.prototype['featuresNativeVideoTracks'] = false;
 
 _videoJs2['default'].options.chromecast = {};
 
-Component.registerComponent('Chromecast', Chromecast);
 Tech.registerTech('Chromecast', Chromecast);
+
 exports['default'] = Chromecast;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
@@ -957,10 +957,6 @@ _videoJs2['default'].addLanguage('fr', {
     'CASTING TO': 'CAST EN COURS SUR'
 });
 
-var USER_AGENT = window.navigator.userAgent;
-
-_videoJs2['default'].browser.IS_EDGE = /Edge/i.test(USER_AGENT);
-
 Component.registerComponent('Chromecast', Chromecast);
 exports['default'] = Chromecast;
 module.exports = exports['default'];
@@ -994,7 +990,9 @@ var plugin = function plugin(options) {
   player.addChild('Chromecast', options);
 };
 
-_videoJs2['default'].plugin('chromecast', plugin);
+var registerPlugin = _videoJs2['default'].registerPlugin || _videoJs2['default'].plugin;
+
+registerPlugin('chromecast', plugin);
 
 exports['default'] = plugin;
 module.exports = exports['default'];

@@ -528,7 +528,7 @@ Chromecast.prototype['featuresNativeVideoTracks'] = false;
 
 _videoJs2['default'].options.chromecast = {};
 
-Component.registerComponent('Chromecast', Chromecast);
 Tech.registerTech('Chromecast', Chromecast);
+
 exports['default'] = Chromecast;
 module.exports = exports['default'];
