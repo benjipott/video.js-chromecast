@@ -42,10 +42,11 @@ var ChromeCastButton = (function (_Button) {
 
         _classCallCheck(this, ChromeCastButton);
 
+        options.appId = player.options_.chromecast.appId;
+        options.metadata = player.options_.chromecast.metadata;
         _get(Object.getPrototypeOf(ChromeCastButton.prototype), 'constructor', this).call(this, player, options);
         this.hide();
         this.initializeApi();
-        options.appId = player.options_.chromecast.appId;
         player.chromecast = this;
 
         this.on(player, 'loadstart', function () {
@@ -171,8 +172,8 @@ var ChromeCastButton = (function (_Button) {
 
             mediaInfo = new chrome.cast.media.MediaInfo(source, type);
             mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-            if (this.options_.playerOptions.chromecast.metadata) {
-                ref = this.options_.playerOptions.chromecast.metadata;
+            if (this.options_.metadata) {
+                ref = this.options_.metadata;
                 for (key in ref) {
                     value = ref[key];
                     mediaInfo.metadata[key] = value;

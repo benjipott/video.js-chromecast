@@ -18,10 +18,11 @@ const Button = videojs.getComponent('Button');
 class ChromeCastButton extends Button {
 
     constructor (player, options) {
+        options.appId = player.options_.chromecast.appId;
+        options.metadata = player.options_.chromecast.metadata;
         super(player, options);
         this.hide();
         this.initializeApi();
-        options.appId = player.options_.chromecast.appId;
         player.chromecast = this;
 
         this.on(player, 'loadstart', () => {
@@ -140,8 +141,8 @@ class ChromeCastButton extends Button {
 
         mediaInfo = new chrome.cast.media.MediaInfo(source, type);
         mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-        if (this.options_.playerOptions.chromecast.metadata) {
-            ref = this.options_.playerOptions.chromecast.metadata;
+        if (this.options_.metadata) {
+            ref = this.options_.metadata;
             for (key in ref) {
                 value = ref[key];
                 mediaInfo.metadata[key] = value;
