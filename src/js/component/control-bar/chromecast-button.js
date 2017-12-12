@@ -6,6 +6,7 @@ import videojs from 'video.js';
 const Component = videojs.getComponent('Component');
 const ControlBar = videojs.getComponent('ControlBar');
 const Button = videojs.getComponent('Button');
+let hasReceiver = false;
 
 /**
  * The base class for buttons that toggle chromecast video
@@ -97,6 +98,11 @@ class ChromeCastButton extends Button {
     }
 
     onInitSuccess () {
+        if (hasReceiver) {
+            this.show();
+        } else {
+            this.hide();
+        }
         return this.apiInitialized = true;
     }
 
@@ -110,7 +116,11 @@ class ChromeCastButton extends Button {
 
     receiverListener (availability) {
         if (availability === 'available') {
+            hasReceiver = true;
             return this.show();
+        } else {
+            hasReceiver = false;
+            return this.hide();
         }
     }
 
