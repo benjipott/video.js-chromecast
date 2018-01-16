@@ -70,6 +70,8 @@ var ChromeCastButton = (function (_Button) {
     _createClass(ChromeCastButton, [{
         key: 'initializeApi',
         value: function initializeApi() {
+
+            var chrome = undefined;
             var apiConfig = undefined;
             var appId = undefined;
             var sessionRequest = undefined;
@@ -77,7 +79,7 @@ var ChromeCastButton = (function (_Button) {
             if (!_videoJs2['default'].browser.IS_CHROME || _videoJs2['default'].browser.IS_EDGE) {
                 return;
             }
-            if (!chrome.cast || !chrome.cast.isAvailable) {
+            if (!chrome || !chrome.cast || !chrome.cast.isAvailable) {
                 _videoJs2['default'].log('Cast APIs not available');
                 if (this.tryingReconnect < 10) {
                     this.setTimeout(this.initializeApi, 1000);
