@@ -44,14 +44,16 @@ class ChromeCastButton extends Button {
      */
 
     initializeApi () {
+
+        let chrome;
         let apiConfig;
         let appId;
         let sessionRequest;
 
         if (!videojs.browser.IS_CHROME || videojs.browser.IS_EDGE) {
             return;
-        }
-        if (!chrome.cast || !chrome.cast.isAvailable) {
+        } 
+        if (!chrome || !chrome.cast || !chrome.cast.isAvailable) {
             videojs.log('Cast APIs not available');
             if (this.tryingReconnect < 10) {
                 this.setTimeout(this.initializeApi, 1000);
