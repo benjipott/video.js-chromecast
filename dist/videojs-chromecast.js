@@ -261,6 +261,15 @@ var ChromeCastButton = (function (_Button) {
             loadRequest.autoplay = true;
             loadRequest.currentTime = this.player_.currentTime();
 
+            // Set active track by selected subtitle
+            var activeTrack = 0
+            document.querySelectorAll('.vjs-menu-content > .vjs-captions-menu-item').forEach(function(el, i) {
+                if (el.classList.contains('vjs-selected')) {
+                    activeTrack = (i + 1)
+                }
+            })
+            loadRequest.activeTrackIds = [activeTrack];
+            
             this.apiSession.loadMedia(loadRequest, this.onMediaDiscovered.bind(this), this.castError.bind(this));
             this.apiSession.addUpdateListener(this.onSessionUpdate.bind(this));
         }
