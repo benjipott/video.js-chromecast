@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/benjipott/video.js-chromecast.svg?branch=master)](https://travis-ci.org/benjipott/video.js-chromecast)
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](pott.benjamin@gmail.com)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/pools/c/81gnn8kAtv)
 
 # Chromecast Plugin for video.js 5.*
 ![Alt text](https://cloud.githubusercontent.com/assets/3854951/22416418/c6ef4b6a-e6ce-11e6-95dd-e8f04719d68f.png "Sample image")
