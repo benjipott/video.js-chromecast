@@ -24,6 +24,7 @@ var _videoJs2 = _interopRequireDefault(_videoJs);
 var Component = _videoJs2['default'].getComponent('Component');
 var ControlBar = _videoJs2['default'].getComponent('ControlBar');
 var Button = _videoJs2['default'].getComponent('Button');
+var hasReceiver = false;
 
 /**
  * The base class for buttons that toggle chromecast video
@@ -125,6 +126,11 @@ var ChromeCastButton = (function (_Button) {
     }, {
         key: 'onInitSuccess',
         value: function onInitSuccess() {
+            if (hasReceiver) {
+                this.show();
+            } else {
+                this.hide();
+            }
             return this.apiInitialized = true;
         }
     }, {
@@ -140,7 +146,11 @@ var ChromeCastButton = (function (_Button) {
         key: 'receiverListener',
         value: function receiverListener(availability) {
             if (availability === 'available') {
+                hasReceiver = true;
                 return this.show();
+            } else {
+                hasReceiver = false;
+                return this.hide();
             }
         }
     }, {
