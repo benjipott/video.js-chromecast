@@ -226,10 +226,16 @@ var ChromeCastButton = (function (_Button) {
                     tracks.push(track);
                 }
                 mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
-                mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
-                mediaInfo.textTrackStyle.backgroundColor = '#00000060';
-                mediaInfo.textTrackStyle.edgeType = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
-                mediaInfo.textTrackStyle.windowType = chrome.cast.media.TextTrackWindowType.ROUNDED_CORNERS;
+                
+                // Update the font to a more generic ux ( Used netflix as example )
+                mediaInfo.textTrackStyle                    = new chrome.cast.media.TextTrackStyle();
+                mediaInfo.textTrackStyle.fontFamily         = 'Arial'
+                mediaInfo.textTrackStyle.foregroundColor    = '#FFFFFF';
+                mediaInfo.textTrackStyle.backgroundColor    = '#00000000';
+                mediaInfo.textTrackStyle.fontScale          = '1.1'
+                mediaInfo.textTrackStyle.edgeColor          = '#00000099'
+                mediaInfo.textTrackStyle.edgeType           = chrome.cast.media.TextTrackEdgeType.DROP_SHADOW;
+                
             }
             // Load/Add audio tracks
 
