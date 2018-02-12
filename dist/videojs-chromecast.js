@@ -1,7 +1,7 @@
 /**
  * videojs-chromecast
  * @version 2.0.8
- * @copyright 2017 Benjipott, Inc.
+ * @copyright 2018 Benjipott, Inc.
  * @license Apache-2.0
  */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}(g.video || (g.video = {})).jsChromecast = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -83,7 +83,7 @@ var ChromeCastButton = (function (_Button) {
             var appId = undefined;
             var sessionRequest = undefined;
 
-            if (!_videoJs2['default'].browser.IS_CHROME || _videoJs2['default'].browser.IS_EDGE) {
+            if (!_videoJs2['default'].browser.IS_CHROME || _videoJs2['default'].browser.IS_EDGE || typeof chrome === 'undefined') {
                 return;
             }
             if (!chrome.cast || !chrome.cast.isAvailable) {
@@ -267,6 +267,10 @@ var ChromeCastButton = (function (_Button) {
     }, {
         key: 'onMediaDiscovered',
         value: function onMediaDiscovered(media) {
+            this.oldTech_ = this.player_.techName_;
+            this.oldSrc_ = this.player_.currentSrc();
+            this.oldType_ = this.player_.currentType();
+
             this.player_.loadTech_('Chromecast', {
                 type: 'cast',
                 apiMedia: media,
@@ -298,17 +302,24 @@ var ChromeCastButton = (function (_Button) {
     }, {
         key: 'onStopAppSuccess',
         value: function onStopAppSuccess() {
-            this.casting = false;
+            var paused = this.player_.paused();
             var time = this.player_.currentTime();
+
+            this.casting = false;
+            this.player_.loadTech_(this.oldTech_);
+
             this.removeClass('connected');
-            this.player_.src(this.player_.options_['sources']);
-            if (!this.player_.paused()) {
+            this.player_.src([{ type: this.oldType_, src: this.oldSrc_ }]);
+
+            if (!paused) {
                 this.player_.one('seeked', function () {
                     return this.player_.play();
                 });
             }
             this.player_.currentTime(time);
             this.player_.options_.inactivityTimeout = this.inactivityTimeout;
+            this.player_.trigger('seeked');
+
             return this.apiSession = null;
         }
 
