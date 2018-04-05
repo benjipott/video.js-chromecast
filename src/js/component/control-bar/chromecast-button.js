@@ -49,7 +49,9 @@ class ChromeCastButton extends Button {
         let appId;
         let sessionRequest;
 
-        if (!videojs.browser.IS_CHROME || videojs.browser.IS_EDGE || typeof chrome === 'undefined') {
+        let user_agent = window.navigator && window.navigator.userAgent || ''
+        let is_chrome = videojs.browser.IS_CHROME || (/CriOS/i).test(user_agent)
+        if (!is_chrome || videojs.browser.IS_EDGE || typeof chrome === 'undefined') {
             return;
         }
         if (!chrome.cast || !chrome.cast.isAvailable) {
