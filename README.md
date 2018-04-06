@@ -12,6 +12,7 @@
 - [Installation](#installation)
 - [Inclusion](#inclusion)
 - [Basic Usage](#basic-usage)
+- [Options](#options)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
