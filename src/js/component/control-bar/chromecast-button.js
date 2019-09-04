@@ -35,6 +35,7 @@ class ChromeCastButton extends Button {
           if (this.casting && this.apiSession) {
             this.apiSession.stop(null, null);
           }
+          this.disposed = true;
         });
     }
 
@@ -117,6 +118,8 @@ class ChromeCastButton extends Button {
     }
 
     receiverListener (availability) {
+        if (this.disposed)
+            return;
         if (availability === 'available') {
             hasReceiver = true;
             return this.show();
