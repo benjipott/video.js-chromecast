@@ -1,3 +1,5 @@
+DEPRECATION WARNING: Unfortunately it's time for me to deprecate this library as I cannot give it the time it needs. If you're interested in maintaining this lib, send me message (joel at joelgriffith dot net). I'd recommend using something like chromeless or puppeteer if possible. Thanks!
+
 [![Build Status](https://travis-ci.org/benjipott/video.js-chromecast.svg?branch=master)](https://travis-ci.org/benjipott/video.js-chromecast)
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/pools/c/81gnn8kAtv)
