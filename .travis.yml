@@ -1,6 +1,17 @@
 language: node_js
+
+cache:
+  bundler: true
+  apt: true
+  directories:
+    - node_modules
+
 node_js:
-  - 6
+  - 8
+
+install:
+  - yarn install --no-save
+
 before_script:
   - if [ "${TRAVIS_PULL_REQUEST}" = "true" ]; then curl https://gist.githubusercontent.com/santiycr/5139565/raw/sauce_connect_setup.sh | bash; fi
 script: npm run build
